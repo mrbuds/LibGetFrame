@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 1
+local MINOR_VERSION = 2
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib, oldversion = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
@@ -38,25 +38,25 @@ local defaultFramePriorities = {
 }
 
 local defaultPlayerFrames = {
-    ["SUFUnitplayer"] = true,
-    ["PitBull4_Frames_Player"] = true,
-    ["ElvUF_Player"] = true,
-    ["oUF_TukuiPlayer"] = true,
-    ["PlayerFrame"] = true,
+    "SUFUnitplayer",
+    "PitBull4_Frames_Player",
+    "ElvUF_Player",
+    "oUF_TukuiPlayer",
+    "PlayerFrame",
 }
 local defaultTargetFrames = {
-    ["SUFUnittarget"] = true,
-    ["PitBull4_Frames_Target"] = true,
-    ["ElvUF_Target"] = true,
-    ["TargetFrame"] = true,
-    ["oUF_TukuiTarget"] = true,
+    "SUFUnittarget",
+    "PitBull4_Frames_Target",
+    "ElvUF_Target",
+    "TargetFrame",
+    "oUF_TukuiTarget",
 }
 local defaultTargettargetFrames = {
-    ["SUFUnittargetarget"] = true,
-    ["PitBull4_Frames_TargetTarget"] = true,
-    ["ElvUF_TargetTarget"] = true,
-    ["TargetTargetFrame"] = true,
-    ["oUF_TukuiTargetTarget"] = true,
+    "SUFUnittargetarget",
+    "PitBull4_Frames_TargetTarget",
+    "ElvUF_TargetTarget",
+    "TargetTargetFrame",
+    "oUF_TukuiTargetTarget",
 }
 
 local GetFramesCache = {}
@@ -93,7 +93,7 @@ local function FindButtonsForUnit(frame, target, depth)
     return results
 end
 
-local function GetFrames(target)
+local function GetFrames(target, ignoredFrames)
     if not UnitExists(target) then
         if type(target) == "string" and target:find("Player") then
             target = select(6,GetPlayerInfoByGUID(target))
@@ -105,20 +105,32 @@ local function GetFrames(target)
         end
     end 
     
-    local results = {}
+    local frames = {}
     for frame, unit in pairs(GetFramesCache) do
         --print("from cache:", frame:GetName())
         if UnitIsUnit(unit, target) then
             if frame:GetAttribute("unit") == unit then
-                tinsert(results, frame)
+                tinsert(frames, frame)
             else
-                results = {}
+                frames = {}
                 break
             end
         end
     end
+
+    frames = #frames > 0 and frames or FindButtonsForUnit(UIParent, target, 0)
+
+    -- filter ignored frames
+    for k, frame in pairs(frames) do
+        local name = frame:GetName()
+        for j, filter in pairs(ignoredFrames) do
+            if name:find(filter) then
+                frames[k] = nil
+            end
+        end
+    end
     
-    return #results > 0 and results or FindButtonsForUnit(UIParent, target, 0)
+    return frames
 end
 
 local function ElvuiWorkaround(frame)
@@ -127,6 +139,13 @@ local function ElvuiWorkaround(frame)
     else
         return frame
     end
+end
+
+local function TableConcat(t1,t2)
+    for i=1,#t2 do
+        t1[#t1+1] = t2[i]
+    end
+    return t1
 end
 
 function lib.GetFrame(target, opt)
@@ -149,44 +168,33 @@ function lib.GetFrame(target, opt)
 
     local ignoredFrames = opt.ignoreFrames
     if opt.ignorePlayerFrame then
-        for k, v in pairs(opt.playerFrames) do
-            ignoredFrames[k] = v
-        end
+        ignoredFrames = TableConcat(ignoredFrames, opt.playerFrames)
     end
     if opt.ignoreTargetFrame then
-        for k, v in pairs(opt.targetFrames) do
-            ignoredFrames[k] = v
-        end
+        ignoredFrames = TableConcat(ignoredFrames, opt.targetFrames)
     end
     if opt.ignoreTargettargetFrame then
-        for k, v in pairs(opt.targettargetFrames) do
-            ignoredFrames[k] = v
-        end
+        ignoredFrames = TableConcat(ignoredFrames, opt.targettargetFrames)
     end
-
-    local frames = GetFrames(target)
+  
+    local frames = GetFrames(target, ignoredFrames)
     if not frames then return nil end
 
     if not opt.returnAll then
         for i = 1, #opt.framePriorities do
             for _, frame in pairs(frames) do
                 local name = frame:GetName()
-                if not ignoredFrames[name] and name:find(opt.framePriorities[i]) then
+                if name:find(opt.framePriorities[i]) then
                     return ElvuiWorkaround(frame)
                 end
             end
         end
-        local firstFrame = frames[1]
-        if firstFrame and not ignoredFrames[firstFrame:GetName()] then
-            return ElvuiWorkaround(firstFrame)
+        if frames[1] then
+            return ElvuiWorkaround(frames[1])
         end
     else
         for index, frame in pairs(frames) do
-            if ignoredFrames[frame:GetName()] then
-                frames[index] = nil
-            else
-                frames[index] = ElvuiWorkaround(frame)
-            end
+            frames[index] = ElvuiWorkaround(frame)
         end
         return frames
     end
