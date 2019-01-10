@@ -1,10 +1,10 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 2
+local MINOR_VERSION = 3
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib, oldversion = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
 
-local maxDepth = 100
+local maxDepth = 50
 
 local defaultFramePriorities = {
     -- raid frames
