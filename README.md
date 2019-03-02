@@ -2,16 +2,18 @@
 
 Return unit frame for a given unit
 
-Usage :
-```
+## Usage
+
+```Lua
 local LGF = LibStub("LibGetFrame-1.0")
 local frame = LGF.GetFrame(unit , options)
 ```
 
-options :
+## Options
 
-  - framePriorities : array, default :
-```
+- framePriorities : array, default :
+
+```Lua
 {
     -- raid frames
     [1] = "^Vd1", -- vuhdo
@@ -43,11 +45,13 @@ options :
     [25] = "^PlayerFrame",
 }
 ```
-  - ignorePlayerFrame : boolean (default true)
-  - ignoreTargetFrame : boolean (default true)
-  - ignoreTargettargetFrame : boolean (default true)
-  - playerFrames : array, default :
-```
+
+- ignorePlayerFrame : boolean (default true)
+- ignoreTargetFrame : boolean (default true)
+- ignoreTargettargetFrame : boolean (default true)
+- playerFrames : array, default :
+
+```Lua
 {
     "SUFUnitplayer",
     "PitBull4_Frames_Player",
@@ -56,8 +60,10 @@ options :
     "PlayerFrame",
 }
 ```
-  - targetFrames : array, default :
-```
+
+- targetFrames : array, default :
+
+```Lua
 {
     "SUFUnittarget",
     "PitBull4_Frames_Target",
@@ -66,8 +72,10 @@ options :
     "oUF_TukuiTarget",
 }
 ```
-  - targettargetFrames : array, default :
-```
+
+- targettargetFrames : array, default :
+
+```Lua
 {
     "SUFUnittargetarget",
     "PitBull4_Frames_TargetTarget",
@@ -76,16 +84,20 @@ options :
     "oUF_TukuiTargetTarget",
 }
 ```
-  - ignoreFrames : array, default :
-```
+
+- ignoreFrames : array, default :
+
+```Lua
 { }
 ```
-  - returnAll : boolean (default false)
 
-Example :
+- returnAll : boolean (default false)
 
-Glow player frame
-```
+## Examples
+
+### Glow player frame
+
+```Lua
 local LGF = LibStub("LibGetFrame-1.0")
 local LCG = LibStub("LibCustomGlow-1.0")
 local frame = LGF.GetFrame("player")
@@ -96,8 +108,9 @@ if frame then
 end
 ```
 
-Glow every frames for your target
-```
+### Glow every frames for your target
+
+```Lua
 local LGF = LibStub("LibGetFrame-1.0")
 local LCG = LibStub("LibCustomGlow-1.0")
 
@@ -114,9 +127,12 @@ for _, frame in pairs(frames) do
 end
 ```
 
-Ignore Vuhdo panel 2 and 3
-```
+### Ignore Vuhdo panel 2 and 3
+
+```Lua
 local frame = LGF.GetFrame("player", {
       ignoreFrames = { "Vd2.*", "Vd3.*" }
 })
 ```
+
+[GitHub Project](https://github.com/mrbuds/LibGetFrame)
