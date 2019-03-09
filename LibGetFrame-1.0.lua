@@ -1,8 +1,10 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 3
+local MINOR_VERSION = 4
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib, oldversion = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
+
+local InCombatLockdown, UnitIsUnit, tinsert = InCombatLockdown, UnitIsUnit, tinsert
 
 local maxDepth = 50
 
@@ -60,6 +62,7 @@ local defaultTargettargetFrames = {
 }
 
 local GetFramesCache = {}
+local GetFramesCacheLockdown = {}
 
 local GetFramesCacheListener = CreateFrame("Frame")
 GetFramesCacheListener:RegisterEvent("PLAYER_REGEN_DISABLED")
@@ -67,6 +70,7 @@ GetFramesCacheListener:RegisterEvent("PLAYER_REGEN_ENABLED")
 GetFramesCacheListener:RegisterEvent("GROUP_ROSTER_UPDATE")
 GetFramesCacheListener:SetScript("OnEvent", function(self, event, ...)
     GetFramesCache = {}
+    GetFramesCacheLockdown = {}
 end)
 
 local function FindButtonsForUnit(frame, target, depth)
@@ -94,6 +98,9 @@ local function FindButtonsForUnit(frame, target, depth)
 end
 
 local function GetFrames(target, ignoredFrames)
+    if GetFramesCacheLockdown[target] then
+        return {}
+    end
     if not UnitExists(target) then
         if type(target) == "string" and target:find("Player") then
             target = select(6,GetPlayerInfoByGUID(target))
@@ -119,6 +126,11 @@ local function GetFrames(target, ignoredFrames)
     end
 
     frames = #frames > 0 and frames or FindButtonsForUnit(UIParent, target, 0)
+
+    -- if we are in combat and no frame was found we want to blacklist unit until cache is wiped
+    if #frames == 0 and InCombatLockdown() then
+        GetFramesCacheLockdown[target] = true
+    end
 
     -- filter ignored frames
     for k, frame in pairs(frames) do
