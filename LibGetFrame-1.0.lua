@@ -1,10 +1,10 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 4
+local MINOR_VERSION = 5
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
-local lib, oldversion = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
+local lib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
 
-local InCombatLockdown, UnitIsUnit, tinsert = InCombatLockdown, UnitIsUnit, tinsert
+local GetPlayerInfoByGUID, UnitExists, IsAddOnLoaded, C_Timer, UnitIsUnit, SecureButton_GetUnit = GetPlayerInfoByGUID, UnitExists, IsAddOnLoaded, C_Timer, UnitIsUnit, SecureButton_GetUnit
 
 local maxDepth = 50
 
@@ -62,86 +62,67 @@ local defaultTargettargetFrames = {
 }
 
 local GetFramesCache = {}
-local GetFramesCacheLockdown = {}
 
-local GetFramesCacheListener = CreateFrame("Frame")
-GetFramesCacheListener:RegisterEvent("PLAYER_REGEN_DISABLED")
-GetFramesCacheListener:RegisterEvent("PLAYER_REGEN_ENABLED")
-GetFramesCacheListener:RegisterEvent("GROUP_ROSTER_UPDATE")
-GetFramesCacheListener:SetScript("OnEvent", function(self, event, ...)
-    GetFramesCache = {}
-    GetFramesCacheLockdown = {}
-end)
-
-local function FindButtonsForUnit(frame, target, depth)
-    local results = {}
-    if depth < maxDepth and type(frame) == "table" and not frame:IsForbidden() then
-        local type = frame:GetObjectType()
-        if type == "Frame" or type == "Button" then
+local function ScanFrames(frame, depth)
+    if depth < maxDepth
+    and type(frame) == "table"
+    and frame.IsForbidden
+    and not frame:IsForbidden()
+    then
+        local frameType = frame:GetObjectType()
+        if frameType == "Frame" or frameType == "Button" then
             for _, child in ipairs({frame:GetChildren()}) do
-                for _, v in pairs(FindButtonsForUnit(child, target, depth + 1)) do
-                    tinsert(results, v)
-                end
+                ScanFrames(child, depth + 1)
             end
         end
-        if type == "Button" then
-            local unit = frame:GetAttribute("unit")
-            if unit and frame:IsVisible() and frame:GetName() then
-                GetFramesCache[frame] = unit
-                if UnitIsUnit(unit, target) then
-                    tinsert(results, frame)
-                end
+        if frameType == "Button" then
+            local unit = SecureButton_GetUnit(frame)
+            local name = frame:GetName()
+            if unit and frame:IsVisible() and name then
+                GetFramesCache[frame] = name
             end
         end
     end
-    return results
+end
+
+local function ScanForUnitFrames()
+    C_Timer.After(1, function()
+        GetFramesCache = {}
+        ScanFrames(UIParent, 0)
+    end)
+end
+
+local function isFrameFiltered(name, ignoredFrames)
+    for _, filter in pairs(ignoredFrames) do
+        if name:find(filter) then
+            return true
+        end
+    end
+    return false
 end
 
 local function GetFrames(target, ignoredFrames)
-    if GetFramesCacheLockdown[target] then
-        return {}
-    end
     if not UnitExists(target) then
         if type(target) == "string" and target:find("Player") then
-            target = select(6,GetPlayerInfoByGUID(target))
+            target = select(6, GetPlayerInfoByGUID(target))
         else
             target = target:gsub(" .*", "")
             if not UnitExists(target) then
-                return {}
-            end
-        end
-    end 
-    
-    local frames = {}
-    for frame, unit in pairs(GetFramesCache) do
-        --print("from cache:", frame:GetName())
-        if UnitIsUnit(unit, target) then
-            if frame:GetAttribute("unit") == unit then
-                tinsert(frames, frame)
-            else
-                frames = {}
-                break
+                return
             end
         end
     end
 
-    frames = #frames > 0 and frames or FindButtonsForUnit(UIParent, target, 0)
-
-    -- if we are in combat and no frame was found we want to blacklist unit until cache is wiped
-    if #frames == 0 and InCombatLockdown() then
-        GetFramesCacheLockdown[target] = true
-    end
-
-    -- filter ignored frames
-    for k, frame in pairs(frames) do
-        local name = frame:GetName()
-        for j, filter in pairs(ignoredFrames) do
-            if name:find(filter) then
-                frames[k] = nil
-            end
+    local frames
+    for frame, frameName in pairs(GetFramesCache) do
+        local unit = SecureButton_GetUnit(frame)
+        if unit and UnitIsUnit(unit, target)
+        and not isFrameFiltered(frameName, ignoredFrames)
+        then
+            frames = frames or {}
+            frames[frame] = frameName
         end
     end
-    
     return frames
 end
 
@@ -188,26 +169,33 @@ function lib.GetFrame(target, opt)
     if opt.ignoreTargettargetFrame then
         ignoredFrames = TableConcat(ignoredFrames, opt.targettargetFrames)
     end
-  
+
     local frames = GetFrames(target, ignoredFrames)
-    if not frames then return nil end
+    if not frames then return end
 
     if not opt.returnAll then
         for i = 1, #opt.framePriorities do
-            for _, frame in pairs(frames) do
-                local name = frame:GetName()
-                if name:find(opt.framePriorities[i]) then
+            for frame, frameName in pairs(frames) do
+                if frameName:find(opt.framePriorities[i]) then
                     return ElvuiWorkaround(frame)
                 end
             end
         end
-        if frames[1] then
-            return ElvuiWorkaround(frames[1])
-        end
+        local next = next
+        return ElvuiWorkaround(next(frames))
     else
-        for index, frame in pairs(frames) do
-            frames[index] = ElvuiWorkaround(frame)
+        for frame in pairs(frames) do
+            frames[frame] = ElvuiWorkaround(frame)
         end
         return frames
     end
 end
+
+local GetFramesCacheListener = CreateFrame("Frame")
+GetFramesCacheListener:RegisterEvent("PLAYER_REGEN_DISABLED")
+GetFramesCacheListener:RegisterEvent("PLAYER_REGEN_ENABLED")
+GetFramesCacheListener:RegisterEvent("PLAYER_ENTERING_WORLD")
+GetFramesCacheListener:RegisterEvent("GROUP_ROSTER_UPDATE")
+GetFramesCacheListener:SetScript("OnEvent", ScanForUnitFrames)
+
+ScanForUnitFrames()
