@@ -4,7 +4,7 @@ if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
 
-local GetPlayerInfoByGUID, UnitExists, IsAddOnLoaded, C_Timer, UnitIsUnit, SecureButton_GetUnit = GetPlayerInfoByGUID, UnitExists, IsAddOnLoaded, C_Timer, UnitIsUnit, SecureButton_GetUnit
+local GetPlayerInfoByGUID, UnitExists, IsAddOnLoaded, C_Timer, UnitIsUnit, SecureButton_GetUnit, wipe = GetPlayerInfoByGUID, UnitExists, IsAddOnLoaded, C_Timer, UnitIsUnit, SecureButton_GetUnit, wipe
 
 local maxDepth = 50
 
@@ -87,7 +87,7 @@ end
 
 local function ScanForUnitFrames()
     C_Timer.After(1, function()
-        GetFramesCache = {}
+        wipe(GetFramesCache)
         ScanFrames(UIParent, 0)
     end)
 end
