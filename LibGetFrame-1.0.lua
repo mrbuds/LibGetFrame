@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 5
+local MINOR_VERSION = 6
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
@@ -25,6 +25,7 @@ local defaultFramePriorities = {
     [13] = "^LimeGroup", -- lime
     [14] = "^SUFHeaderraid", -- suf
     [15] = "^CompactRaid", -- blizz
+	[16] = "^AleaUI_GroupHeader",
     -- party frames
     [16] = "^SUFHeaderparty", --suf
     [17] = "^ElvUF_PartyGroup", -- elv
@@ -63,17 +64,21 @@ local defaultTargettargetFrames = {
 
 local GetFramesCache = {}
 
-local function ScanFrames(frame, depth)
+local function ScanFrames(depth, frame, ...)
+	if not frame then
+		return 
+	end
+	
     if depth < maxDepth
-    and type(frame) == "table"
+    --and type(frame) == "table"
     and frame.IsForbidden
     and not frame:IsForbidden()
     then
         local frameType = frame:GetObjectType()
         if frameType == "Frame" or frameType == "Button" then
-            for _, child in ipairs({frame:GetChildren()}) do
-                ScanFrames(child, depth + 1)
-            end
+            --for _, child in ipairs({frame:GetChildren()}) do
+            ScanFrames(depth + 1, frame:GetChildren())
+            --end
         end
         if frameType == "Button" then
             local unit = SecureButton_GetUnit(frame)
@@ -83,12 +88,14 @@ local function ScanFrames(frame, depth)
             end
         end
     end
+	
+	ScanFrames(depth, ...)
 end
 
 local function ScanForUnitFrames()
     C_Timer.After(1, function()
         wipe(GetFramesCache)
-        ScanFrames(UIParent, 0)
+        ScanFrames(0, UIParent)
     end)
 end
 
