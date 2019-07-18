@@ -4,7 +4,8 @@ if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
 
-local GetPlayerInfoByGUID, UnitExists, IsAddOnLoaded, C_Timer, UnitIsUnit, SecureButton_GetUnit, wipe = GetPlayerInfoByGUID, UnitExists, IsAddOnLoaded, C_Timer, UnitIsUnit, SecureButton_GetUnit, wipe
+local GetPlayerInfoByGUID, UnitExists, IsAddOnLoaded, C_Timer, UnitIsUnit, SecureButton_GetUnit = GetPlayerInfoByGUID, UnitExists, IsAddOnLoaded, C_Timer, UnitIsUnit, SecureButton_GetUnit
+local tinsert, CopyTable, wipe = tinsert, CopyTable, wipe
 
 local maxDepth = 50
 
@@ -134,40 +135,39 @@ local function ElvuiWorkaround(frame)
     end
 end
 
-local function TableConcat(t1,t2)
-    for i=1,#t2 do
-        t1[#t1+1] = t2[i]
-    end
-    return t1
-end
+local defaultOptions = {
+    framePriorities = defaultFramePriorities,
+    ignorePlayerFrame = true,
+    ignoreTargetFrame = true,
+    ignoreTargettargetFrame = true,
+    playerFrames = defaultPlayerFrames,
+    targetFrames = defaultTargetFrames,
+    targettargetFrames = defaultTargettargetFrames,
+    ignoreFrames = {},
+    returnAll = false,
+}
 
 function lib.GetFrame(target, opt)
     opt = opt or {}
-    setmetatable(opt, {
-        __index = {
-            framePriorities = defaultFramePriorities,
-            ignorePlayerFrame = true,
-            ignoreTargetFrame = true,
-            ignoreTargettargetFrame = true,
-            playerFrames = defaultPlayerFrames,
-            targetFrames = defaultTargetFrames,
-            targettargetFrames = defaultTargettargetFrames,
-            ignoreFrames = {},
-            returnAll = false,
-        }
-    })
+    setmetatable(opt, { __index = defaultOptions })
 
     if not target then return end
 
-    local ignoredFrames = opt.ignoreFrames
+    local ignoredFrames = CopyTable(opt.ignoreFrames)
     if opt.ignorePlayerFrame then
-        ignoredFrames = TableConcat(ignoredFrames, opt.playerFrames)
+        for _,v in pairs(opt.playerFrames) do
+            tinsert(ignoredFrames, v)
+        end
     end
     if opt.ignoreTargetFrame then
-        ignoredFrames = TableConcat(ignoredFrames, opt.targetFrames)
+        for _,v in pairs(opt.targetFrames) do
+            tinsert(ignoredFrames, v)
+        end
     end
     if opt.ignoreTargettargetFrame then
-        ignoredFrames = TableConcat(ignoredFrames, opt.targettargetFrames)
+        for _,v in pairs(opt.targettargetFrames) do
+            tinsert(ignoredFrames, v)
+        end
     end
 
     local frames = GetFrames(target, ignoredFrames)
