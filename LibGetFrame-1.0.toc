@@ -6,7 +6,7 @@
 ## X-License: BSD
 ## Version: @project-version@
 ## DefaultState: Enabled
-## LoadOnDemand: 0
+## LoadOnDemand: 1
 
 LibStub\LibStub.lua
 

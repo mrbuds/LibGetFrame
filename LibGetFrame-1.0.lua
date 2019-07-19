@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 6
+local MINOR_VERSION = 7
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
@@ -65,17 +65,15 @@ local defaultTargettargetFrames = {
 
 local GetFramesCache = {}
 
-local function ScanFrames(frame, depth)
+local function ScanFrames(depth, frame, ...)
+    if not frame then return end
     if depth < maxDepth
-    and type(frame) == "table"
     and frame.IsForbidden
     and not frame:IsForbidden()
     then
         local frameType = frame:GetObjectType()
         if frameType == "Frame" or frameType == "Button" then
-            for _, child in ipairs({frame:GetChildren()}) do
-                ScanFrames(child, depth + 1)
-            end
+            ScanFrames(depth + 1, frame:GetChildren())
         end
         if frameType == "Button" then
             local unit = SecureButton_GetUnit(frame)
@@ -85,12 +83,13 @@ local function ScanFrames(frame, depth)
             end
         end
     end
+    ScanFrames(depth, ...)
 end
 
 local function ScanForUnitFrames()
     C_Timer.After(1, function()
         wipe(GetFramesCache)
-        ScanFrames(UIParent, 0)
+        ScanFrames(0, UIParent)
     end)
 end
 
