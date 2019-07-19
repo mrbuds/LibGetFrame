@@ -102,7 +102,7 @@ local function isFrameFiltered(name, ignoredFrames)
     return false
 end
 
-local function GetFrames(target, ignoredFrames)
+local function GetUnitFrames(target, ignoredFrames)
     if not UnitExists(target) then
         if type(target) == "string" and target:find("Player") then
             target = select(6, GetPlayerInfoByGUID(target))
@@ -143,11 +143,13 @@ local defaultOptions = {
     playerFrames = defaultPlayerFrames,
     targetFrames = defaultTargetFrames,
     targettargetFrames = defaultTargettargetFrames,
-    ignoreFrames = {},
+    ignoreFrames = {
+        "PitBull4_Frames_Target's target's target"
+    },
     returnAll = false,
 }
 
-function lib.GetFrame(target, opt)
+function lib.GetUnitFrame(target, opt)
     opt = opt or {}
     setmetatable(opt, { __index = defaultOptions })
 
@@ -170,7 +172,7 @@ function lib.GetFrame(target, opt)
         end
     end
 
-    local frames = GetFrames(target, ignoredFrames)
+    local frames = GetUnitFrames(target, ignoredFrames)
     if not frames then return end
 
     if not opt.returnAll then
@@ -190,6 +192,7 @@ function lib.GetFrame(target, opt)
         return frames
     end
 end
+lib.GetFrame = lib.GetUnitFrame - compatibility
 
 local GetFramesCacheListener = CreateFrame("Frame")
 GetFramesCacheListener:RegisterEvent("PLAYER_REGEN_DISABLED")
