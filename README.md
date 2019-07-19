@@ -6,7 +6,7 @@ Return unit frame for a given unit
 
 ```Lua
 local LGF = LibStub("LibGetFrame-1.0")
-local frame = LGF.GetFrame(unit , options)
+local frame = LGF.GetUnitFrame(unit , options)
 ```
 
 ## Options
@@ -100,7 +100,7 @@ local frame = LGF.GetFrame(unit , options)
 ```Lua
 local LGF = LibStub("LibGetFrame-1.0")
 local LCG = LibStub("LibCustomGlow-1.0")
-local frame = LGF.GetFrame("player")
+local frame = LGF.GetUnitFrame("player")
 
 if frame then
   LCG.ButtonGlow_Start(frame)
@@ -114,7 +114,7 @@ end
 local LGF = LibStub("LibGetFrame-1.0")
 local LCG = LibStub("LibCustomGlow-1.0")
 
-local frames = LGF.GetFrame("target", {
+local frames = LGF.GetUnitFrame("target", {
       ignorePlayerFrame = false,
       ignoreTargetFrame = false,
       ignoreTargettargetFrame = false,
@@ -130,7 +130,7 @@ end
 ### Ignore Vuhdo panel 2 and 3
 
 ```Lua
-local frame = LGF.GetFrame("player", {
+local frame = LGF.GetUnitFrame("player", {
       ignoreFrames = { "Vd2.*", "Vd3.*" }
 })
 ```
