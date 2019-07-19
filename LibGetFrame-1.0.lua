@@ -57,7 +57,7 @@ local defaultTargetFrames = {
 }
 local defaultTargettargetFrames = {
     "SUFUnittargetarget",
-    "PitBull4_Frames_TargetTarget",
+    "PitBull4_Frames_Target's target",
     "ElvUF_TargetTarget",
     "TargetTargetFrame",
     "oUF_TukuiTargetTarget",
