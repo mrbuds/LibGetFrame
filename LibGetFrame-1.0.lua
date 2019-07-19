@@ -192,7 +192,7 @@ function lib.GetUnitFrame(target, opt)
         return frames
     end
 end
-lib.GetFrame = lib.GetUnitFrame - compatibility
+lib.GetFrame = lib.GetUnitFrame -- compatibility
 
 local GetFramesCacheListener = CreateFrame("Frame")
 GetFramesCacheListener:RegisterEvent("PLAYER_REGEN_DISABLED")
