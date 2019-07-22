@@ -149,7 +149,20 @@ local defaultOptions = {
     returnAll = false,
 }
 
+local GetFramesCacheListener
+lib.Init = function()
+    GetFramesCacheListener = CreateFrame("Frame")
+    GetFramesCacheListener:RegisterEvent("PLAYER_REGEN_DISABLED")
+    GetFramesCacheListener:RegisterEvent("PLAYER_REGEN_ENABLED")
+    GetFramesCacheListener:RegisterEvent("PLAYER_ENTERING_WORLD")
+    GetFramesCacheListener:RegisterEvent("GROUP_ROSTER_UPDATE")
+    GetFramesCacheListener:SetScript("OnEvent", ScanForUnitFrames)
+
+    ScanForUnitFrames()
+end
+
 function lib.GetUnitFrame(target, opt)
+    if not GetFramesCacheListener then lib.Init() end
     opt = opt or {}
     setmetatable(opt, { __index = defaultOptions })
 
@@ -193,12 +206,3 @@ function lib.GetUnitFrame(target, opt)
     end
 end
 lib.GetFrame = lib.GetUnitFrame -- compatibility
-
-local GetFramesCacheListener = CreateFrame("Frame")
-GetFramesCacheListener:RegisterEvent("PLAYER_REGEN_DISABLED")
-GetFramesCacheListener:RegisterEvent("PLAYER_REGEN_ENABLED")
-GetFramesCacheListener:RegisterEvent("PLAYER_ENTERING_WORLD")
-GetFramesCacheListener:RegisterEvent("GROUP_ROSTER_UPDATE")
-GetFramesCacheListener:SetScript("OnEvent", ScanForUnitFrames)
-
-ScanForUnitFrames()
