@@ -1,8 +1,11 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 8
+local MINOR_VERSION = 9
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
+
+lib.callbacks = lib.callbacks or LibStub("CallbackHandler-1.0"):New(lib)
+local callbacks = lib.callbacks
 
 local GetPlayerInfoByGUID, UnitExists, IsAddOnLoaded, C_Timer, UnitIsUnit, SecureButton_GetUnit = GetPlayerInfoByGUID, UnitExists, IsAddOnLoaded, C_Timer, UnitIsUnit, SecureButton_GetUnit
 local tinsert, CopyTable, wipe = tinsert, CopyTable, wipe
@@ -90,10 +93,12 @@ local function ScanForUnitFrames(noDelay)
     if noDelay then
         wipe(GetFramesCache)
         ScanFrames(0, UIParent)
+        callbacks:Fire("GETFRAME_REFRESH")
     else
         C_Timer.After(1, function()
             wipe(GetFramesCache)
             ScanFrames(0, UIParent)
+            callbacks:Fire("GETFRAME_REFRESH")
         end)
     end
 end
