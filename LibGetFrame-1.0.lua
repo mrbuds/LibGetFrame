@@ -89,15 +89,18 @@ local function ScanFrames(depth, frame, ...)
     ScanFrames(depth, ...)
 end
 
+local wait = false
 local function ScanForUnitFrames(noDelay)
     if noDelay then
         wipe(GetFramesCache)
         ScanFrames(0, UIParent)
         callbacks:Fire("GETFRAME_REFRESH")
-    else
+    elseif not wait then
+        wait = true
         C_Timer.After(1, function()
             wipe(GetFramesCache)
             ScanFrames(0, UIParent)
+            wait = false
             callbacks:Fire("GETFRAME_REFRESH")
         end)
     end
@@ -160,19 +163,18 @@ local defaultOptions = {
 }
 
 local GetFramesCacheListener
-lib.Init = function(noDelay)
+local function Init(noDelay)
     GetFramesCacheListener = CreateFrame("Frame")
     GetFramesCacheListener:RegisterEvent("PLAYER_REGEN_DISABLED")
     GetFramesCacheListener:RegisterEvent("PLAYER_REGEN_ENABLED")
     GetFramesCacheListener:RegisterEvent("PLAYER_ENTERING_WORLD")
     GetFramesCacheListener:RegisterEvent("GROUP_ROSTER_UPDATE")
-    GetFramesCacheListener:SetScript("OnEvent", ScanForUnitFrames)
-
+    GetFramesCacheListener:SetScript("OnEvent", function() ScanForUnitFrames(false) end)
     ScanForUnitFrames(noDelay)
 end
 
 function lib.GetUnitFrame(target, opt)
-    if not GetFramesCacheListener then lib.Init(true) end
+    if type(GetFramesCacheListener) ~= "table" then Init(true) end
     opt = opt or {}
     setmetatable(opt, { __index = defaultOptions })
 
