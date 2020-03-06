@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 9
+local MINOR_VERSION = 10
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
@@ -218,3 +218,37 @@ function lib.GetUnitFrame(target, opt)
     end
 end
 lib.GetFrame = lib.GetUnitFrame -- compatibility
+
+-- nameplates
+
+local statusBars = {}
+local function GetChildrenStatusBars(frame, ...)
+   if not frame then return end
+   local frameType = frame:GetObjectType()
+   if frameType == "Frame" or frameType == "Button" then
+      GetChildrenStatusBars(frame:GetChildren())
+   end
+   if frameType == "StatusBar" and frame:IsVisible() then
+      tinsert(statusBars, frame)
+   end
+   GetChildrenStatusBars(...)
+end
+
+function lib.GetUnitNameplate(unit)
+    if not unit then return end
+    local frame = C_NamePlate.GetNamePlateForUnit(unit)
+    if not frame then return end
+    wipe(statusBars)
+    GetChildrenStatusBars(frame)
+    if #statusBars == 0 then
+        return frame
+    else
+        for _, child in pairs(statusBars) do
+            local name = child:GetName()
+            if name and name:lower():find("health") then
+                return child
+            end
+        end
+        return statusBars[1]
+    end
+end
