@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 12
+local MINOR_VERSION = 13
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
@@ -67,6 +67,8 @@ local defaultTargettargetFrames = {
 }
 
 local GetFramesCache = {}
+local FrameToGUID = {}
+local UpdatedFrames = {}
 
 local function ScanFrames(depth, frame, ...)
     if not frame then return end
@@ -83,6 +85,11 @@ local function ScanFrames(depth, frame, ...)
             local name = frame:GetName()
             if unit and frame:IsVisible() and name then
                 GetFramesCache[frame] = name
+                local guid = UnitGUID(unit)
+                if guid ~= FrameToGUID[frame] then
+                    FrameToGUID[frame] = guid
+                    UpdatedFrames[frame] = guid
+                end
             end
         end
     end
@@ -92,16 +99,24 @@ end
 local wait = false
 local function ScanForUnitFrames(noDelay)
     if noDelay then
+        wipe(UpdatedFrames)
         wipe(GetFramesCache)
         ScanFrames(0, UIParent)
         callbacks:Fire("GETFRAME_REFRESH")
+        for frame, guid in pairs(UpdatedFrames) do
+            callbacks:Fire("FRAME_GUID_UPDATE", frame, guid)
+        end
     elseif not wait then
         wait = true
         C_Timer.After(1, function()
+            wipe(UpdatedFrames)
             wipe(GetFramesCache)
             ScanFrames(0, UIParent)
             wait = false
             callbacks:Fire("GETFRAME_REFRESH")
+            for frame, guid in pairs(UpdatedFrames) do
+                callbacks:Fire("FRAME_GUID_UPDATE", frame, guid)
+            end
         end)
     end
 end
