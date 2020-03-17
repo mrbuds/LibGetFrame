@@ -50,6 +50,8 @@ local defaultPlayerFrames = {
     "ElvUF_Player",
     "oUF_TukuiPlayer",
     "PlayerFrame",
+    "oUF_Player",
+    "oUF_PlayerPlate",
 }
 local defaultTargetFrames = {
     "SUFUnittarget",
@@ -57,6 +59,7 @@ local defaultTargetFrames = {
     "ElvUF_Target",
     "TargetFrame",
     "oUF_TukuiTarget",
+    "oUF_Target",
 }
 local defaultTargettargetFrames = {
     "SUFUnittargetarget",
@@ -64,6 +67,7 @@ local defaultTargettargetFrames = {
     "ElvUF_TargetTarget",
     "TargetTargetFrame",
     "oUF_TukuiTargetTarget",
+    "oUF_ToT",
 }
 
 local GetFramesCache = {}
