@@ -244,9 +244,9 @@ function lib.GetUnitNameplate(unit)
     local nameplate = C_NamePlate.GetNamePlateForUnit(unit)
     if nameplate then
         -- credit to Exality for https://wago.io/explosiveorbs
-        if nameplate.unitFrame and nameplate.unitFrame.HealthBar then
+        if nameplate.unitFrame and nameplate.unitFrame.Health then
           -- elvui
-          return nameplate.unitFrame.HealthBar
+          return nameplate.unitFrame.Health
         elseif nameplate.unitFramePlater then
           -- plater
           return nameplate.unitFramePlater.healthBar
