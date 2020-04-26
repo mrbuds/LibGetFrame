@@ -28,13 +28,13 @@ local defaultFramePriorities = {
     [12] = "^oUF.*raid", -- generic oUF
     [13] = "^LimeGroup", -- lime
     [14] = "^SUFHeaderraid", -- suf
-    [15] = "^CompactRaid", -- blizz
     -- party frames
-    [16] = "^AleaUI_GroupHeader", -- Alea
-    [17] = "^SUFHeaderparty", --suf
-    [18] = "^ElvUF_PartyGroup", -- elv
-    [19] = "^oUF.*party", -- generic oUF
-    [20] = "^PitBull4_Groups_Party", -- pitbull4
+    [15] = "^AleaUI_GroupHeader", -- Alea
+    [16] = "^SUFHeaderparty", --suf
+    [17] = "^ElvUF_PartyGroup", -- elv
+    [18] = "^oUF.*party", -- generic oUF
+    [19] = "^PitBull4_Groups_Party", -- pitbull4
+    [20] = "^CompactRaid", -- blizz
     [21] = "^CompactParty", -- blizz
     -- player frame
     [22] = "^SUFUnitplayer",
