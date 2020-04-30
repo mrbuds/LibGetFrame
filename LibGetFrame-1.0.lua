@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 17
+local MINOR_VERSION = 18
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
@@ -71,6 +71,7 @@ local defaultTargettargetFrames = {
 }
 
 local GetFramesCache = {}
+local FrameToUnitFresh = {}
 local FrameToUnit = {}
 local UpdatedFrames = {}
 
@@ -93,6 +94,7 @@ local function ScanFrames(depth, frame, ...)
                     FrameToUnit[frame] = unit
                     UpdatedFrames[frame] = unit
                 end
+                FrameToUnitFresh[frame] = unit
             end
         end
     end
@@ -100,26 +102,31 @@ local function ScanFrames(depth, frame, ...)
 end
 
 local wait = false
+
+local function doScanForUnitFrames()
+    wait = false
+    wipe(UpdatedFrames)
+    wipe(GetFramesCache)
+    wipe(FrameToUnitFresh)
+    ScanFrames(0, UIParent)
+    callbacks:Fire("GETFRAME_REFRESH")
+    for frame, unit in pairs(UpdatedFrames) do
+        callbacks:Fire("FRAME_UNIT_UPDATE", frame, unit)
+    end
+    for frame, unit in pairs(FrameToUnit) do
+        if FrameToUnitFresh[frame] ~= unit then
+            callbacks:Fire("FRAME_UNIT_REMOVED", frame, unit)
+            FrameToUnit[frame] = nil
+        end
+    end
+end
 local function ScanForUnitFrames(noDelay)
     if noDelay then
-        wipe(UpdatedFrames)
-        wipe(GetFramesCache)
-        ScanFrames(0, UIParent)
-        callbacks:Fire("GETFRAME_REFRESH")
-        for frame, unit in pairs(UpdatedFrames) do
-            callbacks:Fire("FRAME_UNIT_UPDATE", frame, unit)
-        end
+        doScanForUnitFrames()
     elseif not wait then
         wait = true
         C_Timer.After(1, function()
-            wipe(UpdatedFrames)
-            wipe(GetFramesCache)
-            ScanFrames(0, UIParent)
-            wait = false
-            callbacks:Fire("GETFRAME_REFRESH")
-            for frame, unit in pairs(UpdatedFrames) do
-                callbacks:Fire("FRAME_UNIT_UPDATE", frame, unit)
-            end
+            doScanForUnitFrames()
         end)
     end
 end
