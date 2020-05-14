@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 18
+local MINOR_VERSION = 19
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
@@ -183,7 +183,8 @@ local defaultOptions = {
     targettargetFrames = defaultTargettargetFrames,
     ignoreFrames = {
         "PitBull4_Frames_Target's target's target",
-        "ElvUF_PartyGroup%dUnitButton%dTarget"
+        "ElvUF_PartyGroup%dUnitButton%dTarget",
+        "RavenButton"
     },
     returnAll = false,
 }
