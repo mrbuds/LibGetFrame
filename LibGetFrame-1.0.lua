@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 21
+local MINOR_VERSION = 22
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
@@ -68,7 +68,7 @@ local defaultTargettargetFrames = {
     "TargetTargetFrame",
 }
 local defaultPartyTargetFrames = {
-    "SUFChildpartytarget",
+    "SUFChildpartytarget%d",
 }
 
 local GetFramesCache = {}
@@ -227,7 +227,7 @@ function lib.GetUnitFrame(target, opt)
         end
     end
     if opt.ignorePartyTargetFrame then
-        for _,v in pairs(opt.partyTarget) do
+        for _,v in pairs(opt.partyTargetFrames) do
             tinsert(ignoredFrames, v)
         end
     end
