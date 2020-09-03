@@ -67,6 +67,9 @@ local defaultTargettargetFrames = {
     "oUF_ToT",
     "TargetTargetFrame",
 }
+local defaultPartyTargetFrames = {
+    "SUFChildpartytarget",
+}
 
 local GetFramesCache = {}
 local FrameToUnitFresh = {}
@@ -176,9 +179,11 @@ local defaultOptions = {
     ignorePlayerFrame = true,
     ignoreTargetFrame = true,
     ignoreTargettargetFrame = true,
+    ignorePartyTargetFrame = true,
     playerFrames = defaultPlayerFrames,
     targetFrames = defaultTargetFrames,
     targettargetFrames = defaultTargettargetFrames,
+    partyTargetFrames = defaultPartyTargetFrames,
     ignoreFrames = {
         "PitBull4_Frames_Target's target's target",
         "ElvUF_PartyGroup%dUnitButton%dTarget",
@@ -218,6 +223,11 @@ function lib.GetUnitFrame(target, opt)
     end
     if opt.ignoreTargettargetFrame then
         for _,v in pairs(opt.targettargetFrames) do
+            tinsert(ignoredFrames, v)
+        end
+    end
+    if opt.ignorePartyTargetFrame then
+        for _,v in pairs(opt.partyTarget) do
             tinsert(ignoredFrames, v)
         end
     end
