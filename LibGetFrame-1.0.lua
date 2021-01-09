@@ -202,6 +202,7 @@ local function Init(noDelay)
     GetFramesCacheListener:RegisterEvent("PLAYER_REGEN_ENABLED")
     GetFramesCacheListener:RegisterEvent("PLAYER_ENTERING_WORLD")
     GetFramesCacheListener:RegisterEvent("GROUP_ROSTER_UPDATE")
+    GetFramesCacheListener:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
     GetFramesCacheListener:SetScript("OnEvent", function() ScanForUnitFrames(false) end)
     ScanForUnitFrames(noDelay)
 end
