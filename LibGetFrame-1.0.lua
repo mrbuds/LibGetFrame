@@ -29,12 +29,14 @@ local defaultFramePriorities = {
     "^oUF_.-Raid", -- generic oUF
     "^LimeGroup", -- lime
     "^SUFHeaderraid", -- suf
+    "^LUFHeaderraid", -- LUF
     -- party frames
     "^AleaUI_GroupHeader", -- Alea
     "^SUFHeaderparty", --suf
     "^ElvUF_PartyGroup", -- elv
     "^oUF_.-Party", -- generic oUF
     "^PitBull4_Groups_Party", -- pitbull4
+    "^LUFHeaderparty", -- LUF
     "^CompactRaid", -- blizz
     "^CompactParty", -- blizz
     -- player frame
@@ -42,6 +44,7 @@ local defaultFramePriorities = {
     "^PitBull4_Frames_Player",
     "^ElvUF_Player",
     "^oUF_.-Player",
+    "^LUFUnitplayer",
     "^PlayerFrame",
 }
 
@@ -51,6 +54,7 @@ local defaultPlayerFrames = {
     "ElvUF_Player",
     "oUF_.-Player",
     "oUF_PlayerPlate",
+    "LUFUnitplayer",
     "PlayerFrame",
 }
 local defaultTargetFrames = {
@@ -58,6 +62,7 @@ local defaultTargetFrames = {
     "PitBull4_Frames_Target",
     "ElvUF_Target",
     "oUF_.-Target",
+    "LUFUnittarget",
     "TargetFrame",
 }
 local defaultTargettargetFrames = {
@@ -66,6 +71,7 @@ local defaultTargettargetFrames = {
     "ElvUF_TargetTarget",
     "oUF_.-TargetTarget",
     "oUF_ToT",
+    "LUFUnittargettarget",
     "TargetTargetFrame",
 }
 local defaultPartyFrames = {
@@ -74,6 +80,7 @@ local defaultPartyFrames = {
     "^ElvUF_PartyGroup",
     "^oUF_.-Party",
     "^PitBull4_Groups_Party",
+    "^LUFHeaderparty",
     "^CompactParty",
 }
 local defaultPartyTargetFrames = {
@@ -89,6 +96,7 @@ local defaultRaidFrames = {
     "^oUF_.-Raid",
     "^LimeGroup",
     "^SUFHeaderraid",
+    "^LUFHeaderraid",
     "^CompactRaid",
 }
 
