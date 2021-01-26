@@ -68,6 +68,14 @@ local defaultTargettargetFrames = {
     "oUF_ToT",
     "TargetTargetFrame",
 }
+local defaultPartyFrames = {
+    "^AleaUI_GroupHeader",
+    "^SUFHeaderparty",
+    "^ElvUF_PartyGroup",
+    "^oUF_.-Party",
+    "^PitBull4_Groups_Party",
+    "^CompactParty",
+}
 local defaultPartyTargetFrames = {
     "SUFChildpartytarget%d",
 }
@@ -181,10 +189,12 @@ local defaultOptions = {
     ignorePlayerFrame = true,
     ignoreTargetFrame = true,
     ignoreTargettargetFrame = true,
+    ignorePartyFrame = false,
     ignorePartyTargetFrame = true,
     playerFrames = defaultPlayerFrames,
     targetFrames = defaultTargetFrames,
     targettargetFrames = defaultTargettargetFrames,
+    partyFrames = defaultPartyFrames,
     partyTargetFrames = defaultPartyTargetFrames,
     ignoreFrames = {
         "PitBull4_Frames_Target's target's target",
@@ -227,6 +237,11 @@ function lib.GetUnitFrame(target, opt)
     end
     if opt.ignoreTargettargetFrame then
         for _,v in pairs(opt.targettargetFrames) do
+            tinsert(ignoredFrames, v)
+        end
+    end
+    if opt.ignorePartyFrame then
+        for _,v in pairs(opt.partyFrames) do
             tinsert(ignoredFrames, v)
         end
     end
