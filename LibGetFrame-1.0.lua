@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 27
+local MINOR_VERSION = 28
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
@@ -30,6 +30,7 @@ local defaultFramePriorities = {
     "^LimeGroup", -- lime
     "^SUFHeaderraid", -- suf
     "^LUFHeaderraid", -- luf
+    "^AshToAsh", -- AshToAsh
     -- party frames
     "^AleaUI_GroupHeader", -- Alea
     "^SUFHeaderparty", --suf
@@ -81,6 +82,7 @@ local defaultPartyFrames = {
     "^ElvUF_PartyGroup",
     "^oUF_.-Party",
     "^PitBull4_Groups_Party",
+    "^AshToAsh",
     "^CompactParty",
 }
 local defaultPartyTargetFrames = {
@@ -99,6 +101,7 @@ local defaultRaidFrames = {
     "^PlexusLayout",
     "^ElvUF_RaidGroup",
     "^oUF_.-Raid",
+    "^AshToAsh",
     "^LimeGroup",
     "^SUFHeaderraid",
     "^LUFHeaderraid",
