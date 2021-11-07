@@ -82,7 +82,6 @@ local defaultPartyFrames = {
     "^ElvUF_PartyGroup",
     "^oUF_.-Party",
     "^PitBull4_Groups_Party",
-    "^AshToAshUnit%d+Unit%d+",
     "^CompactParty",
 }
 local defaultPartyTargetFrames = {
@@ -101,7 +100,7 @@ local defaultRaidFrames = {
     "^PlexusLayout",
     "^ElvUF_RaidGroup",
     "^oUF_.-Raid",
-    "^AshToAshUnit%d+Unit%d+",
+    "^AshToAsh",
     "^LimeGroup",
     "^SUFHeaderraid",
     "^LUFHeaderraid",
