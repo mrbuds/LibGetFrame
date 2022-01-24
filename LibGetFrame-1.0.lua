@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 29
+local MINOR_VERSION = 30
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
@@ -24,7 +24,7 @@ local defaultFramePriorities = {
     "^GridLayout", -- grid
     "^Grid2Layout", -- grid2
     "^PlexusLayout", -- plexus
-    "^ElvUF_RaidGroup", -- elv
+    "^ElvUF_Raid%d*Group", -- elv
     "^oUF_bdGrid", -- bdgrid
     "^oUF_.-Raid", -- generic oUF
     "^LimeGroup", -- lime
@@ -98,7 +98,7 @@ local defaultRaidFrames = {
     "^GridLayout",
     "^Grid2Layout",
     "^PlexusLayout",
-    "^ElvUF_RaidGroup",
+    "^ElvUF_Raid%d*Group",
     "^oUF_.-Raid",
     "^AshToAsh",
     "^LimeGroup",
