@@ -230,7 +230,7 @@ local defaultOptions = {
     ignoreFrames = {
         "PitBull4_Frames_Target's target's target",
         "ElvUF_PartyGroup%dUnitButton%dTarget",
-        "RavenButton",
+        "RavenOverlay",
         "AshToAshUnit%d+ShadowGroupHeaderUnitButton%d+"
     },
     returnAll = false,
