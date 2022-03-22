@@ -338,6 +338,9 @@ function lib.GetUnitNameplate(unit)
         elseif nameplate.TPFrame then
           -- tidyplates: threat plates
           return nameplate.TPFrame.visual.healthbar
+        elseif nameplate.unitFrame then
+          -- bdui nameplates
+          return nameplate.unitFrame.Health
         elseif nameplate.ouf then
           -- bdNameplates
           return nameplate.ouf.Health
