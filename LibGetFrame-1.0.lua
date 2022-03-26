@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 34
+local MINOR_VERSION = 35
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
@@ -28,6 +28,7 @@ local defaultFramePriorities = {
     "^oUF_bdGrid", -- bdgrid
     "^oUF_.-Raid", -- generic oUF
     "^LimeGroup", -- lime
+    "^InvenRaidFrames3Group%dUnitButton", -- InvenRaidFrames3
     "^SUFHeaderraid", -- suf
     "^LUFHeaderraid", -- luf
     "^AshToAshUnit%d+Unit%d+", -- AshToAsh
@@ -42,6 +43,7 @@ local defaultFramePriorities = {
     "^CompactRaid", -- blizz
     "^CompactParty", -- blizz
     -- player frame
+    "^InvenUnitFrames_Player",
     "^SUFUnitplayer",
     "^LUFUnitplayer",
     "^PitBull4_Frames_Player",
@@ -51,6 +53,7 @@ local defaultFramePriorities = {
 }
 
 local defaultPlayerFrames = {
+    "^InvenUnitFrames_Player",
     "SUFUnitplayer",
     "LUFUnitplayer",
     "PitBull4_Frames_Player",
@@ -60,6 +63,7 @@ local defaultPlayerFrames = {
     "PlayerFrame",
 }
 local defaultTargetFrames = {
+    "^InvenUnitFrames_Target",
     "SUFUnittarget",
     "LUFUnittarget",
     "PitBull4_Frames_Target",
@@ -68,6 +72,7 @@ local defaultTargetFrames = {
     "TargetFrame",
 }
 local defaultTargettargetFrames = {
+    "^InvenUnitFrames_TargetTarget",
     "SUFUnittargetarget",
     "LUFUnittargetarget",
     "PitBull4_Frames_Target's target",
@@ -77,6 +82,7 @@ local defaultTargettargetFrames = {
     "TargetTargetFrame",
 }
 local defaultPartyFrames = {
+    "^InvenUnitFrames_Party%d",
     "^AleaUI_GroupHeader",
     "^SUFHeaderparty",
     "^LUFHeaderparty",
@@ -89,6 +95,7 @@ local defaultPartyTargetFrames = {
     "SUFChildpartytarget%d",
 }
 local defaultFocusFrames = {
+    "^InvenUnitFrames_Focus",
     "ElvUF_FocusTarget",
     "LUFUnitfocus",
     "FocusFrame"
@@ -99,6 +106,7 @@ local defaultRaidFrames = {
     "^GridLayout",
     "^Grid2Layout",
     "^PlexusLayout",
+    "^InvenRaidFrames3Group%dUnitButton",
     "^ElvUF_Raid%d*Group",
     "^oUF_.-Raid",
     "^AshToAsh",
@@ -234,6 +242,7 @@ local defaultOptions = {
         "ElvUF_PartyGroup%dUnitButton%dTarget",
         "RavenOverlay",
         "AshToAshUnit%d+ShadowGroupHeaderUnitButton%d+"
+        "InvenUnitFrames_TargetTargetTarget",
     },
     returnAll = false,
 }
