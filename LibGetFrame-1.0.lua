@@ -241,7 +241,7 @@ local defaultOptions = {
         "PitBull4_Frames_Target's target's target",
         "ElvUF_PartyGroup%dUnitButton%dTarget",
         "RavenOverlay",
-        "AshToAshUnit%d+ShadowGroupHeaderUnitButton%d+"
+        "AshToAshUnit%d+ShadowGroupHeaderUnitButton%d+",
         "InvenUnitFrames_TargetTargetTarget",
     },
     returnAll = false,
