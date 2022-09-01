@@ -7,46 +7,15 @@ Return unit frame for a given unit
 ```Lua
 local LGF = LibStub("LibGetFrame-1.0")
 local frame = LGF.GetUnitFrame(unit , options)
+
+-- For turning on accurate pet frames tracking use
+LGF.TrackPets(true)
+-- But it can be ressource intensive if your UI have a high number of frames and/or a high number of UNIT_PET events happen in encounter
 ```
 
 ## Options
 
-- framePriorities : array, default :
-
-```Lua
-{
-    -- raid frames
-    "^Vd1", -- vuhdo
-    "^Vd2", -- vuhdo
-    "^Vd3", -- vuhdo
-    "^Vd4", -- vuhdo
-    "^Vd5", -- vuhdo
-    "^Vd", -- vuhdo
-    "^HealBot", -- healbot
-    "^GridLayout", -- grid
-    "^Grid2Layout", -- grid2
-    "^PlexusLayout", -- plexus
-    "^ElvUF_RaidGroup", -- elv
-    "^oUF_bdGrid", -- bdgrid
-    "^oUF_.-Raid", -- generic oUF
-    "^LimeGroup", -- lime
-    "^SUFHeaderraid", -- suf
-    -- party frames
-    "^AleaUI_GroupHeader", -- Alea
-    "^SUFHeaderparty", --suf
-    "^ElvUF_PartyGroup", -- elv
-    "^oUF_.-Party", -- generic oUF
-    "^PitBull4_Groups_Party", -- pitbull4
-    "^CompactRaid", -- blizz
-    "^CompactParty", -- blizz
-    -- player frame
-    "^SUFUnitplayer",
-    "^PitBull4_Frames_Player",
-    "^ElvUF_Player",
-    "^oUF_.-Player",
-    "^PlayerFrame",
-}
-```
+- framePriorities : array
 
 - ignorePlayerFrame : boolean (default true)
 - ignoreTargetFrame : boolean (default true)
@@ -55,94 +24,16 @@ local frame = LGF.GetUnitFrame(unit , options)
 - ignorePartyTargetFrame : boolean (default true)
 - ignoreRaidFrame : boolean (default false)
 
-- playerFrames : array, default :
-
-```Lua
-{
-    "SUFUnitplayer",
-    "PitBull4_Frames_Player",
-    "ElvUF_Player",
-    "oUF_.-Player",
-    "oUF_PlayerPlate",
-    "PlayerFrame",
-}
-```
-
-- targetFrames : array, default :
-
-```Lua
-{
-    "SUFUnittarget",
-    "PitBull4_Frames_Target",
-    "ElvUF_Target",
-    "oUF_.-Target",
-    "TargetFrame",
-}
-```
-
-- targettargetFrames : array, default :
-
-```Lua
-{
-    "SUFUnittargetarget",
-    "PitBull4_Frames_Target's target",
-    "ElvUF_TargetTarget",
-    "oUF_.-TargetTarget",
-    "oUF_ToT",
-    "TargetTargetFrame",
-}
-```
-
-- partyFrames : array, default :
-
-```Lua
-{
-    "^AleaUI_GroupHeader",
-    "^SUFHeaderparty",
-    "^ElvUF_PartyGroup",
-    "^oUF_.-Party",
-    "^PitBull4_Groups_Party",
-    "^CompactParty",
-}
-```
-
-- partyTargetFrames : array, default :
-
-```Lua
-{
-    "SUFChildpartytarget",
-}
-```
-
-- raidFrames : array, default :
-
-```Lua
-{
-    "^Vd",
-    "^HealBot",
-    "^GridLayout",
-    "^Grid2Layout",
-    "^PlexusLayout",
-    "^ElvUF_RaidGroup",
-    "^oUF_.-Raid",
-    "^LimeGroup",
-    "^SUFHeaderraid",
-    "^CompactRaid",
-}
-```
-
-- ignoreFrames : array, default :
-
-```Lua
-{
-        "PitBull4_Frames_Target's target's target",
-        "ElvUF_PartyGroup%dUnitButton%dTarget",
-        "ElvUF_FocusTarget",
-        "RavenButton"
-}
-```
-
+- playerFrames : array
+- targetFrames : array
+- targettargetFrames : array
+- partyFrames : array
+- partyTargetFrames : array
+- raidFrames : array
+- ignoreFrames : array
 - returnAll : boolean (default false)
+
+For arrays check LibGetFrame-1.0.lua code for defaults
 
 ## Examples
 
