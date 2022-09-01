@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 39
+local MINOR_VERSION = 40
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
@@ -259,8 +259,8 @@ local function Init(noDelay)
     GetFramesCacheListener:SetScript(
         "OnEvent",
         function(event, unit)
-            if event == "UNIT" then
-                if not (UnitIsUnit("player") or UnitInParty(unit) or UnitInRaid(unit)) then
+            if event == "UNIT_PET" then
+                if not (UnitIsUnit("player", unit) or UnitInParty(unit) or UnitInRaid(unit)) then
                     return
                 end
             end
