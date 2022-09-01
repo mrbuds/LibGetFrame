@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 40
+local MINOR_VERSION = 41
 if not LibStub then
   error(MAJOR_VERSION .. " requires LibStub.")
 end
@@ -259,7 +259,6 @@ local function Init(noDelay)
   GetFramesCacheListener:RegisterEvent("PLAYER_ENTERING_WORLD")
   GetFramesCacheListener:RegisterEvent("GROUP_ROSTER_UPDATE")
   GetFramesCacheListener:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
-  GetFramesCacheListener:RegisterEvent("UNIT_PET")
   GetFramesCacheListener:SetScript("OnEvent", function(event, unit)
     if event == "UNIT_PET" then
       if not (UnitIsUnit("player", unit) or UnitInParty(unit) or UnitInRaid(unit)) then
@@ -269,6 +268,21 @@ local function Init(noDelay)
     ScanForUnitFrames(false)
   end)
   ScanForUnitFrames(noDelay)
+end
+
+local trackingPets = false
+-- TrackPets register UNIT_PET, can be useful for tracking pets changes while in encounter, but it can have a bad impact on FPS
+function lib.TrackPets(test)
+  if type(GetFramesCacheListener) ~= "table" then
+    Init(true)
+  end
+  if test and not trackingPets then
+    GetFramesCacheListener:RegisterEvent("UNIT_PET")
+    trackingPets = true
+  elseif not test and trackingPets then
+    GetFramesCacheListener:UnregisterEvent("UNIT_PET")
+    trackingPets = false
+  end
 end
 
 function lib.GetUnitFrame(target, opt)
