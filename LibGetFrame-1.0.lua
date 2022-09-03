@@ -251,6 +251,24 @@ local defaultOptions = {
   returnAll = false,
 }
 
+local IterateGroupMembers = function(reversed, forceParty)
+  local unit = (not forceParty and IsInRaid()) and 'raid' or 'party'
+  local numGroupMembers = unit == 'party' and GetNumSubgroupMembers() or GetNumGroupMembers()
+  local i = reversed and numGroupMembers or (unit == 'party' and 0 or 1)
+  return function()
+    local ret
+    if i == 0 and unit == 'party' then
+      ret = 'player'
+    elseif i <= numGroupMembers and i > 0 then
+      ret = unit .. i
+    end
+    i = i + (reversed and -1 or 1)
+    return ret
+  end
+end
+
+local unitPetState = {} -- track if unit's pet exists
+
 local GetFramesCacheListener
 local function Init(noDelay)
   GetFramesCacheListener = CreateFrame("Frame")
@@ -258,11 +276,25 @@ local function Init(noDelay)
   GetFramesCacheListener:RegisterEvent("PLAYER_REGEN_ENABLED")
   GetFramesCacheListener:RegisterEvent("PLAYER_ENTERING_WORLD")
   GetFramesCacheListener:RegisterEvent("GROUP_ROSTER_UPDATE")
+  GetFramesCacheListener:RegisterEvent("UNIT_PET")
   GetFramesCacheListener:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
   GetFramesCacheListener:SetScript("OnEvent", function(event, unit)
+    if event == "GROUP_ROSTER_UPDATE" then
+      wipe(unitPetState)
+      for member in IterateGroupMembers() do
+        unitPetState[member] = UnitExists(member .. "pet") and true or nil
+      end
+    end
     if event == "UNIT_PET" then
       if not (UnitIsUnit("player", unit) or UnitInParty(unit) or UnitInRaid(unit)) then
         return
+      end
+      -- skip if unit's pet existance has not changed
+      local exists = UnitExists(unit .. "pet") and true or nil
+      if unitPetState[unit] == exists then
+        return
+      else
+        unitPetState[unit] = exists
       end
     end
     ScanForUnitFrames(false)
@@ -270,6 +302,7 @@ local function Init(noDelay)
   ScanForUnitFrames(noDelay)
 end
 
+--[[
 local trackingPets = false
 -- TrackPets register UNIT_PET, can be useful for tracking pets changes while in encounter, but it can have a bad impact on FPS
 function lib.TrackPets(test)
@@ -284,6 +317,7 @@ function lib.TrackPets(test)
     trackingPets = false
   end
 end
+]]
 
 function lib.GetUnitFrame(target, opt)
   if type(GetFramesCacheListener) ~= "table" then
