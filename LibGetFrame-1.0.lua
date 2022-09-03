@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 41
+local MINOR_VERSION = 42
 if not LibStub then
   error(MAJOR_VERSION .. " requires LibStub.")
 end
@@ -122,15 +122,17 @@ local defaultRaidFrames = {
   "^CompactRaid",
 }
 
-local GetFramesCache = {}
-local FrameToUnitFresh = {}
-local FrameToUnit = {}
-local UpdatedFrames = {}
+local GetFramesCache = {}     -- frame adress => frame name, GetUnitFrames only use this table
+local GetFramesCacheTemp = {} -- temp table while scanning
+local FrameToUnitFresh = {}   -- frame adress => unit, all frames with a unit found in a scan
+local FrameToUnit = {}        -- frame adress => unit, from last scan, to make differential with FrameToUnitFresh
+local UpdatedFrames = {}      -- frame adress => unit, frames found this scan with a unit different from previous scan
 
 local function ScanFrames(depth, frame, ...)
   if not frame then
     return
   end
+  coroutine.yield()
   if depth < maxDepth and frame.IsForbidden and not frame:IsForbidden() then
     local frameType = frame:GetObjectType()
     if frameType == "Frame" or frameType == "Button" then
@@ -140,7 +142,7 @@ local function ScanFrames(depth, frame, ...)
       local unit = SecureButton_GetUnit(frame)
       local name = frame:GetName()
       if unit and frame:IsVisible() and name then
-        GetFramesCache[frame] = name
+        GetFramesCacheTemp[frame] = name
         if unit ~= FrameToUnit[frame] then
           FrameToUnit[frame] = unit
           UpdatedFrames[frame] = unit
@@ -152,33 +154,73 @@ local function ScanFrames(depth, frame, ...)
   ScanFrames(depth, ...)
 end
 
-local wait = false
+local status = "ready"
+local co
+local coroutineFrame = CreateFrame("Frame")
+coroutineFrame:Hide()
 
 local function doScanForUnitFrames()
-  wait = false
-  wipe(UpdatedFrames)
-  wipe(GetFramesCache)
-  wipe(FrameToUnitFresh)
-  ScanFrames(0, UIParent)
+  if status == "ready" then
+    wipe(UpdatedFrames)
+    wipe(GetFramesCacheTemp)
+    wipe(FrameToUnitFresh)
+    status = "scanning"
+    co = coroutine.create(ScanFrames)
+    coroutineFrame:Show()
+  end
+end
+
+local function ScanCompleted()
+  -- copy temporary GetFramesCache into the one use by GetUnitFrames
+  GetFramesCache = GetFramesCacheTemp
+  GetFramesCacheTemp = {}
+  -- fire callback for GetFramesCache refreshed
   callbacks:Fire("GETFRAME_REFRESH")
+  -- fire callback for updated frames
   for frame, unit in pairs(UpdatedFrames) do
     callbacks:Fire("FRAME_UNIT_UPDATE", frame, unit)
   end
+  -- fire callback for units without a frame
   for frame, unit in pairs(FrameToUnit) do
     if FrameToUnitFresh[frame] ~= unit then
       callbacks:Fire("FRAME_UNIT_REMOVED", frame, unit)
       FrameToUnit[frame] = nil
     end
   end
+  if status == "scan_queued" then
+    -- start a new scan if an event called one while in progress
+    status = "ready"
+    doScanForUnitFrames()
+  else
+    -- ready for a new scan
+    status = "ready"
+  end
 end
+
+coroutineFrame:SetScript("OnUpdate", function()
+  local start = debugprofilestop()
+  while debugprofilestop() - start < 16 and coroutine.status(co) ~= "dead" do
+    coroutine.resume(co, 0, UIParent)
+  end
+  if coroutine.status(co) == "dead" then
+    -- stop OnUpdate script
+    coroutineFrame:Hide()
+    ScanCompleted()
+  end
+end)
+
 local function ScanForUnitFrames(noDelay)
   if noDelay then
     doScanForUnitFrames()
-  elseif not wait then
-    wait = true
+  elseif status == "ready" then
+    -- start scan in 1s, block any scan request until it's ready
+    status = "scan_delay"
     C_Timer.After(1, function()
       doScanForUnitFrames()
     end)
+  elseif status == "scanning" then
+    -- already scanning, trigger an other scan when it's done
+    status = "scan_queued"
   end
 end
 
