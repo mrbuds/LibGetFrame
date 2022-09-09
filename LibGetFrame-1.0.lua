@@ -211,6 +211,10 @@ local function ScanForUnitFrames(noDelay)
   end
 end
 
+function lib.ScanForUnitFrames()
+  ScanForUnitFrames(true)
+end
+
 local function isFrameFiltered(name, ignoredFrames)
   for _, filter in pairs(ignoredFrames) do
     if name:find(filter) then
