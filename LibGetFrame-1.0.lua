@@ -197,13 +197,15 @@ coroutineFrame:SetScript("OnUpdate", function()
 end)
 
 local function ScanForUnitFrames(noDelay)
-  if noDelay then
-    doScanForUnitFrames()
-  elseif status == "ready" then
-    status = "scan_delay"
-    C_Timer.After(1, function()
+  if status == "ready" then
+    if noDelay then
       doScanForUnitFrames()
-    end)
+    else
+      status = "scan_delay"
+      C_Timer.After(1, function()
+        doScanForUnitFrames()
+      end)
+    end
   elseif status == "scanning" then
     status = "scan_queued"
   end
