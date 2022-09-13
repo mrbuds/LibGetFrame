@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 43
+local MINOR_VERSION = 44
 if not LibStub then
   error(MAJOR_VERSION .. " requires LibStub.")
 end
@@ -28,6 +28,7 @@ local defaultFramePriorities = {
   "^HealBot", -- healbot
   "^GridLayout", -- grid
   "^Grid2Layout", -- grid2
+  "^NugRaid%d+UnitButton%d+", -- Aptechka
   "^PlexusLayout", -- plexus
   "^ElvUF_Raid%d*Group", -- elv
   "^oUF_bdGrid", -- bdgrid
