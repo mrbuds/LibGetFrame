@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 45
+local MINOR_VERSION = 46
 if not LibStub then
   error(MAJOR_VERSION .. " requires LibStub.")
 end
@@ -13,7 +13,7 @@ local callbacks = lib.callbacks
 
 local GetPlayerInfoByGUID, UnitExists, IsAddOnLoaded, C_Timer, UnitIsUnit, SecureButton_GetUnit =
   GetPlayerInfoByGUID, UnitExists, IsAddOnLoaded, C_Timer, UnitIsUnit, SecureButton_GetUnit
-local tinsert, CopyTable, wipe = tinsert, CopyTable, wipe
+local tinsert, CopyTable, wipe, GetActionInfo = tinsert, CopyTable, wipe, GetActionInfo
 
 local maxDepth = 50
 
@@ -129,8 +129,11 @@ local FrameToUnitFresh = {}   -- frame adress => unit, all frames with a unit fo
 local FrameToUnit = {}        -- frame adress => unit, from last scan, to make differential with FrameToUnitFresh
 local UpdatedFrames = {}      -- frame adress => unit, frames found this scan with a unit different from previous scan
 
-local ActionButtons = {}      -- action slot => frame
+local ActionButtons = {}      -- action frame => slot
 local ActionButtonsTemp = {}  -- temp table while scanning
+local ActionButtonUpdate = false
+local SlotToFrame = {}
+local SlotToAction = {}
 
 local function ScanFrames(depth, frame, ...)
   if not frame then
@@ -154,7 +157,26 @@ local function ScanFrames(depth, frame, ...)
         FrameToUnitFresh[frame] = unit
       end
     elseif frameType == "CheckButton" and frame.action then
-      ActionButtonsTemp[frame.action] = frame
+      local action = frame.action
+      local slotType, slotId, slotSubType = GetActionInfo(action)
+      ActionButtonsTemp[frame] = frame.action
+      --  check if a frame is not assigned to same action
+      if ActionButtons[frame] ~= frame.action then
+        ActionButtonUpdate = true
+      end
+      -- check if action have same type/id/subType
+      if not SlotToAction[action] then
+        SlotToAction[action] = { type = slotType, id = slotId, subType = slotSubType }
+        ActionButtonUpdate = true
+      else
+        local slotData = SlotToAction[action]
+        if slotData.type ~= slotType or slotData.id ~= slotId or slotData.subType ~= slotSubType then
+          slotData.type = slotType
+          slotData.id = slotId
+          slotData.subType = slotSubType
+          ActionButtonUpdate = true
+        end
+      end
     end
   end
   ScanFrames(depth, ...)
@@ -171,6 +193,7 @@ local function doScanForUnitFrames()
     wipe(GetFramesCacheTemp)
     wipe(FrameToUnitFresh)
     wipe(ActionButtonsTemp)
+    ActionButtonUpdate = false
     status = "scanning"
     co = coroutine.create(ScanFrames)
     coroutineFrame:Show()
@@ -196,6 +219,13 @@ coroutineFrame:SetScript("OnUpdate", function()
         callbacks:Fire("FRAME_UNIT_REMOVED", frame, unit)
         FrameToUnit[frame] = nil
       end
+    end
+    if ActionButtonUpdate then
+      SlotToFrame = {}
+      for frame, slot in pairs(ActionButtons) do
+        SlotToFrame[slot] = frame
+      end
+      callbacks:Fire("ACTIONBAR_SLOT_CHANGED")
     end
     coroutineFrame:Hide()
     if status == "scan_queued" then
@@ -319,6 +349,7 @@ local function Init(noDelay)
   GetFramesCacheListener:RegisterEvent("PLAYER_REGEN_ENABLED")
   GetFramesCacheListener:RegisterEvent("PLAYER_ENTERING_WORLD")
   GetFramesCacheListener:RegisterEvent("GROUP_ROSTER_UPDATE")
+  GetFramesCacheListener:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
   GetFramesCacheListener:RegisterEvent("UNIT_PET")
   GetFramesCacheListener:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
   GetFramesCacheListener:SetScript("OnEvent", function(event, unit)
@@ -459,7 +490,7 @@ end
 ---@param slotId number
 ---@return CheckButton
 function lib.GetActionButtonBySlot(slotId)
-  return ActionButtons[slotId]
+  return SlotToFrame[slotId]
 end
 
 ---Return a list of action buttons for a spell or item or equipement set.
@@ -477,8 +508,8 @@ function lib.GetActionButtonsById(id, actionType, subType)
     if C_ActionBar.HasSpellActionButtons(id) then
       local slots = C_ActionBar.FindSpellActionButtons(id)
       for _, slot in ipairs(slots) do
-        if ActionButtons[slot] then
-          tinsert(frames, ActionButtons[slot])
+        if SlotToFrame[slot] then
+          tinsert(frames, SlotToFrame[slot])
         end
       end
     end
@@ -487,7 +518,7 @@ function lib.GetActionButtonsById(id, actionType, subType)
     for i = 1, 120 do
       slotType, slotId, slotSubType = GetActionInfo(i)
       if id == slotId and slotType == actionType and (subType == nil or subType == slotSubType) then
-        tinsert(frames, ActionButtons[i])
+        tinsert(frames, SlotToFrame[i])
       end
     end
   end
