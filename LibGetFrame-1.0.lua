@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 44
+local MINOR_VERSION = 45
 if not LibStub then
   error(MAJOR_VERSION .. " requires LibStub.")
 end
@@ -129,6 +129,9 @@ local FrameToUnitFresh = {}   -- frame adress => unit, all frames with a unit fo
 local FrameToUnit = {}        -- frame adress => unit, from last scan, to make differential with FrameToUnitFresh
 local UpdatedFrames = {}      -- frame adress => unit, frames found this scan with a unit different from previous scan
 
+local ActionButtons = {}      -- action slot => frame
+local ActionButtonsTemp = {}  -- temp table while scanning
+
 local function ScanFrames(depth, frame, ...)
   if not frame then
     return
@@ -150,6 +153,8 @@ local function ScanFrames(depth, frame, ...)
         end
         FrameToUnitFresh[frame] = unit
       end
+    elseif frameType == "CheckButton" and frame.action then
+      ActionButtonsTemp[frame.action] = frame
     end
   end
   ScanFrames(depth, ...)
@@ -165,6 +170,7 @@ local function doScanForUnitFrames()
     wipe(UpdatedFrames)
     wipe(GetFramesCacheTemp)
     wipe(FrameToUnitFresh)
+    wipe(ActionButtonsTemp)
     status = "scanning"
     co = coroutine.create(ScanFrames)
     coroutineFrame:Show()
@@ -177,7 +183,10 @@ coroutineFrame:SetScript("OnUpdate", function()
     coroutine.resume(co, 0, UIParent)
   end
   if coroutine.status(co) == "dead" then
-    GetFramesCache = CopyTable(GetFramesCacheTemp)
+    GetFramesCache = GetFramesCacheTemp
+    GetFramesCacheTemp = {}
+    ActionButtons = ActionButtonsTemp
+    ActionButtonsTemp = {}
     callbacks:Fire("GETFRAME_REFRESH")
     for frame, unit in pairs(UpdatedFrames) do
       callbacks:Fire("FRAME_UNIT_UPDATE", frame, unit)
@@ -336,23 +345,6 @@ local function Init(noDelay)
   ScanForUnitFrames(noDelay)
 end
 
---[[
-local trackingPets = false
--- TrackPets register UNIT_PET, can be useful for tracking pets changes while in encounter, but it can have a bad impact on FPS
-function lib.TrackPets(test)
-  if type(GetFramesCacheListener) ~= "table" then
-    Init(true)
-  end
-  if test and not trackingPets then
-    GetFramesCacheListener:RegisterEvent("UNIT_PET")
-    trackingPets = true
-  elseif not test and trackingPets then
-    GetFramesCacheListener:UnregisterEvent("UNIT_PET")
-    trackingPets = false
-  end
-end
-]]
-
 function lib.GetUnitFrame(target, opt)
   if type(GetFramesCacheListener) ~= "table" then
     Init(true)
@@ -461,4 +453,43 @@ function lib.GetUnitNameplate(unit)
       return nameplate
     end
   end
+end
+
+---Return an action button for a slotId.
+---@param slotId number
+---@return CheckButton
+function lib.GetActionButtonBySlot(slotId)
+  return ActionButtons[slotId]
+end
+
+---Return a list of action buttons for a spell or item or equipement set.
+---Check documentation of GetActionInfo for more information.
+---@param id number|string
+---@param actionType string
+---@param subType? number|string
+---@return table<CheckButton>
+function lib.GetActionButtonsById(id, actionType, subType)
+  if type(GetFramesCacheListener) ~= "table" then
+    Init(true)
+  end
+  local frames = {}
+  if actionType == "spell" and type(id) == "number" then
+    if C_ActionBar.HasSpellActionButtons(id) then
+      local slots = C_ActionBar.FindSpellActionButtons(id)
+      for _, slot in ipairs(slots) do
+        if ActionButtons[slot] then
+          tinsert(frames, ActionButtons[slot])
+        end
+      end
+    end
+  else
+    local slotType, slotId, slotSubType
+    for i = 1, 120 do
+      slotType, slotId, slotSubType = GetActionInfo(i)
+      if id == slotId and slotType == actionType and (subType == nil or subType == slotSubType) then
+        tinsert(frames, ActionButtons[i])
+      end
+    end
+  end
+  return frames
 end
