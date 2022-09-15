@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 46
+local MINOR_VERSION = 47
 if not LibStub then
   error(MAJOR_VERSION .. " requires LibStub.")
 end
@@ -206,10 +206,14 @@ coroutineFrame:SetScript("OnUpdate", function()
     coroutine.resume(co, 0, UIParent)
   end
   if coroutine.status(co) == "dead" then
+    local tmp = GetFramesCache
     GetFramesCache = GetFramesCacheTemp
-    GetFramesCacheTemp = {}
+    GetFramesCacheTemp = tmp
+    wipe(GetFramesCacheTemp)
+    tmp = ActionButtons
     ActionButtons = ActionButtonsTemp
-    ActionButtonsTemp = {}
+    ActionButtonsTemp = tmp
+    wipe(ActionButtonsTemp)
     callbacks:Fire("GETFRAME_REFRESH")
     for frame, unit in pairs(UpdatedFrames) do
       callbacks:Fire("FRAME_UNIT_UPDATE", frame, unit)
