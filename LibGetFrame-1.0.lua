@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 47
+local MINOR_VERSION = 48
 if not LibStub then
   error(MAJOR_VERSION .. " requires LibStub.")
 end
@@ -225,9 +225,10 @@ coroutineFrame:SetScript("OnUpdate", function()
       end
     end
     if ActionButtonUpdate then
-      SlotToFrame = {}
+      wipe(SlotToFrame)
       for frame, slot in pairs(ActionButtons) do
-        SlotToFrame[slot] = frame
+        SlotToFrame[slot] = SlotToFrame[slot] or {}
+        tinsert(SlotToFrame[slot], frame)
       end
       callbacks:Fire("ACTIONBAR_SLOT_CHANGED")
     end
@@ -490,14 +491,14 @@ function lib.GetUnitNameplate(unit)
   end
 end
 
----Return an action button for a slotId.
+---Return a list of action buttons for a slotId.
 ---@param slotId number
----@return CheckButton
-function lib.GetActionButtonBySlot(slotId)
+---@return table<CheckButton>
+function lib.GetActionButtonsBySlot(slotId)
   return SlotToFrame[slotId]
 end
 
----Return a list of action buttons for a spell or item or equipement set.
+---Return a list of action buttons for a spell/item/equipement set.
 ---Check documentation of GetActionInfo for more information.
 ---@param id number|string
 ---@param actionType string
@@ -513,7 +514,9 @@ function lib.GetActionButtonsById(id, actionType, subType)
       local slots = C_ActionBar.FindSpellActionButtons(id)
       for _, slot in ipairs(slots) do
         if SlotToFrame[slot] then
-          tinsert(frames, SlotToFrame[slot])
+          for _, frame in ipairs(SlotToFrame[slot]) do
+            tinsert(frames, frame)
+          end
         end
       end
     end
@@ -521,8 +524,14 @@ function lib.GetActionButtonsById(id, actionType, subType)
     local slotType, slotId, slotSubType
     for i = 1, 120 do
       slotType, slotId, slotSubType = GetActionInfo(i)
-      if id == slotId and slotType == actionType and (subType == nil or subType == slotSubType) then
-        tinsert(frames, SlotToFrame[i])
+      if id == slotId
+      and slotType == actionType
+      and (subType == nil or subType == slotSubType)
+      and SlotToFrame[i]
+      then
+        for _, frame in ipairs(SlotToFrame[i]) do
+          tinsert(frames, frame)
+        end
       end
     end
   end
