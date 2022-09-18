@@ -136,6 +136,7 @@ local SlotToFrame = {}
 local SlotToAction = {}
 
 local function ScanFrames(depth, frame, ...)
+  coroutine.yield()
   if not frame then
     return
   end
