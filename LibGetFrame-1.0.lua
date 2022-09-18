@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 48
+local MINOR_VERSION = 49
 if not LibStub then
   error(MAJOR_VERSION .. " requires LibStub.")
 end
@@ -135,12 +135,17 @@ local ActionButtonUpdate = false
 local SlotToFrame = {}
 local SlotToAction = {}
 
+local debugLevel = 0 -- 0 = no debug, 1 = report after scan finish, 2 = full
+local scanStartTime
+local scanFramesCount
+local scanPeak
+local scanStartUp
+
 local function ScanFrames(depth, frame, ...)
   coroutine.yield()
   if not frame then
     return
   end
-  coroutine.yield()
   if depth < maxDepth and frame.IsForbidden and not frame:IsForbidden() then
     local frameType = frame:GetObjectType()
     if frameType == "Frame" or frameType == "Button" then
@@ -152,6 +157,9 @@ local function ScanFrames(depth, frame, ...)
       if unit and frame:IsVisible() and name then
         GetFramesCacheTemp[frame] = name
         if unit ~= FrameToUnit[frame] then
+          if debugLevel > 1 then
+            print("FrameToUnit", frame, FrameToUnit[frame], unit)
+          end
           FrameToUnit[frame] = unit
           UpdatedFrames[frame] = unit
         end
@@ -188,7 +196,7 @@ local co
 local coroutineFrame = CreateFrame("Frame")
 coroutineFrame:Hide()
 
-local function doScanForUnitFrames()
+local function doScanForUnitFrames(event)
   if not coroutineFrame:IsShown() then
     wipe(UpdatedFrames)
     wipe(GetFramesCacheTemp)
@@ -196,6 +204,15 @@ local function doScanForUnitFrames()
     wipe(ActionButtonsTemp)
     ActionButtonUpdate = false
     status = "scanning"
+    if debugLevel > 0 then
+      scanStartTime = debugprofilestop()
+      scanFramesCount = 1
+      scanPeak = 0
+      scanStartUp = nil
+      if debugLevel > 1 then
+        print("scan start", event)
+      end
+    end
     co = coroutine.create(ScanFrames)
     coroutineFrame:Show()
   end
@@ -203,10 +220,22 @@ end
 
 coroutineFrame:SetScript("OnUpdate", function()
   local start = debugprofilestop()
-  while debugprofilestop() - start < 16 and coroutine.status(co) ~= "dead" do
+  -- Limit to 6ms per frame
+  if debugLevel > 0 and scanStartUp == nil then
+    scanStartUp = start - scanStartTime
+  end
+  while debugprofilestop() - start < 5 and coroutine.status(co) ~= "dead" do
     coroutine.resume(co, 0, UIParent)
   end
+  if debugLevel > 0 then
+    scanPeak = math.max(scanPeak, debugprofilestop() - start)
+    scanFramesCount = scanFramesCount + 1
+  end
   if coroutine.status(co) == "dead" then
+    local scanEndTime
+    if debugLevel > 0 then
+      scanEndTime = debugprofilestop()
+    end
     local tmp = GetFramesCache
     GetFramesCache = GetFramesCacheTemp
     GetFramesCacheTemp = tmp
@@ -217,10 +246,16 @@ coroutineFrame:SetScript("OnUpdate", function()
     wipe(ActionButtonsTemp)
     callbacks:Fire("GETFRAME_REFRESH")
     for frame, unit in pairs(UpdatedFrames) do
+      if debugLevel > 1 then
+        print("FRAME_UNIT_UPDATE", frame, unit)
+      end
       callbacks:Fire("FRAME_UNIT_UPDATE", frame, unit)
     end
     for frame, unit in pairs(FrameToUnit) do
       if FrameToUnitFresh[frame] ~= unit then
+        if debugLevel > 1 then
+          print("FRAME_UNIT_REMOVED", frame, unit)
+        end
         callbacks:Fire("FRAME_UNIT_REMOVED", frame, unit)
         FrameToUnit[frame] = nil
       end
@@ -231,28 +266,48 @@ coroutineFrame:SetScript("OnUpdate", function()
         SlotToFrame[slot] = SlotToFrame[slot] or {}
         tinsert(SlotToFrame[slot], frame)
       end
-      callbacks:Fire("ACTIONBAR_SLOT_CHANGED")
+      if debugLevel > 1 then
+        print("ACTIONBAR_SLOT_CHANGED")
+      end
+      callbacks:Fire("ACTIONBAR_SLOT_CHANGED") -- this does not reflect which event triggered the scan
     end
     coroutineFrame:Hide()
     if status == "scan_queued" then
-      doScanForUnitFrames()
+      if debugLevel > 1 then
+        print("scan queued start")
+      end
+      doScanForUnitFrames("queued")
     else
+      if debugLevel > 0 then
+        local now = debugprofilestop()
+        print(("scan done, %d frames, scan: %dms, callbacks: %dms, startUp: %dms, peak: %dms, total: %dms"):format(
+          scanFramesCount,
+          scanEndTime - scanStartTime,
+          now - scanEndTime,
+          scanStartUp,
+          scanPeak,
+          now - scanStartTime
+        ))
+      end
       status = "ready"
     end
   end
 end)
 
-local function ScanForUnitFrames(noDelay)
+local function ScanForUnitFrames(noDelay, event)
   if status == "ready" then
     if noDelay then
-      doScanForUnitFrames()
+      doScanForUnitFrames(event)
     else
       status = "scan_delay"
       C_Timer.After(1, function()
-        doScanForUnitFrames()
+        doScanForUnitFrames(event)
       end)
     end
   elseif status == "scanning" then
+    if debugLevel > 1 then
+      print("queue scan for", event)
+    end
     status = "scan_queued"
   end
 end
@@ -359,6 +414,9 @@ local function Init(noDelay)
   GetFramesCacheListener:RegisterEvent("UNIT_PET")
   GetFramesCacheListener:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
   GetFramesCacheListener:SetScript("OnEvent", function(self, event, unit, ...)
+    if debugLevel > 1 then
+      print("OnEvent", event, unit, ...)
+    end
     if event == "GROUP_ROSTER_UPDATE" then
       wipe(unitPetState)
       for member in IterateGroupMembers() do
@@ -377,9 +435,9 @@ local function Init(noDelay)
         unitPetState[unit] = exists
       end
     end
-    ScanForUnitFrames(false)
+    ScanForUnitFrames(false, event)
   end)
-  ScanForUnitFrames(noDelay)
+  ScanForUnitFrames(noDelay, event)
 end
 
 function lib.GetUnitFrame(target, opt)
