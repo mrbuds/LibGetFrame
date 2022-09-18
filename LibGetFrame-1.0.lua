@@ -358,7 +358,7 @@ local function Init(noDelay)
   GetFramesCacheListener:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
   GetFramesCacheListener:RegisterEvent("UNIT_PET")
   GetFramesCacheListener:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
-  GetFramesCacheListener:SetScript("OnEvent", function(event, unit)
+  GetFramesCacheListener:SetScript("OnEvent", function(self, event, unit, ...)
     if event == "GROUP_ROSTER_UPDATE" then
       wipe(unitPetState)
       for member in IterateGroupMembers() do
