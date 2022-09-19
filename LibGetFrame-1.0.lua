@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 49
+local MINOR_VERSION = 50
 if not LibStub then
   error(MAJOR_VERSION .. " requires LibStub.")
 end
@@ -175,7 +175,8 @@ end
 
 function lib.StartProfile()
   if profiling then
-    return
+    print(MAJOR_VERSION, " (StartProfile) Profiling already started")
+    return false
   end
   profiling = true
   profileData = {}
@@ -185,7 +186,8 @@ end
 
 function lib.StopProfile()
   if not profiling then
-    return
+    print(MAJOR_VERSION, " (StopProfile) Profiling not running")
+    return false
   end
   profiling = false
   StartProfiling = doNothing
