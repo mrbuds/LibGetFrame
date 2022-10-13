@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 51
+local MINOR_VERSION = 52
 if not LibStub then
   error(MAJOR_VERSION .. " requires LibStub.")
 end
@@ -140,16 +140,16 @@ function CacheMonitorMixin:Add(key, ...)
   local args = select("#", ...)
   if args > 1 then
     if self.makeDiff then
-      for i = 1, args do
-        local arg = select(i, ...)
-        if type(self.data[key]) ~= "table" or self.data[key][i] ~= arg then
-          if self.data[key] == nil then
-            self.added[key] = true
-          else
+      if type(self.data[key]) == "table" then
+        for i = 1, args do
+          local arg = select(i, ...)
+          if self.data[key][i] ~= arg then
             self.updated[key] = self.data[key]
+            break
           end
-          break
         end
+      else
+        self.added[key] = true
       end
     end
     self.cache[key] = {...}
