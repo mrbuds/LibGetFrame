@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 53
+local MINOR_VERSION = 54
 if not LibStub then
   error(MAJOR_VERSION .. " requires LibStub.")
 end
@@ -25,7 +25,8 @@ local defaultFramePriorities = {
   "^Vd4", -- vuhdo
   "^Vd5", -- vuhdo
   "^Vd", -- vuhdo
-  "^HealBot", -- healbot
+  "^HealBot_HealUnit", -- healbot
+  "^hbPet_HealUnit", -- healbot
   "^GridLayout", -- grid
   "^Grid2Layout", -- grid2
   "^NugRaid%d+UnitButton%d+", -- Aptechka
@@ -76,6 +77,7 @@ local defaultTargetFrames = {
   "ElvUF_Target",
   "oUF_.-Target",
   "TargetFrame",
+  "^hbExtra_HealUnit",
 }
 local defaultTargettargetFrames = {
   "^InvenUnitFrames_TargetTarget",
@@ -105,10 +107,12 @@ local defaultFocusFrames = {
   "ElvUF_FocusTarget",
   "LUFUnitfocus",
   "FocusFrame",
+  "^hbExtra_HealUnit",
 }
 local defaultRaidFrames = {
   "^Vd",
-  "^HealBot",
+  "^HealBot_HealUnit",
+  "^hbPet_HealUnit",
   "^GridLayout",
   "^Grid2Layout",
   "^PlexusLayout",
