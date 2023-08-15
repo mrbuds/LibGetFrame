@@ -464,6 +464,8 @@ local defaultOptions = {
     "RavenOverlay",
     "AshToAshUnit%d+ShadowGroupHeaderUnitButton%d+",
     "InvenUnitFrames_TargetTargetTarget",
+    "CellSpotlightFrame",
+    "CellQuickCastButton",
   },
   returnAll = false,
 }
