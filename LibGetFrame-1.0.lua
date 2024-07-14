@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 58
+local MINOR_VERSION = 59
 if not LibStub then
   error(MAJOR_VERSION .. " requires LibStub.")
 end
@@ -491,6 +491,15 @@ end
 
 local unitPetState = {} -- track if unit's pet exists
 
+local saveGetUnitFrame
+local function fixGetUnitFrameIntegrity()
+  lib.GetUnitFrame = saveGetUnitFrame
+  lib.GetFrame = saveGetUnitFrame
+  if WeakAuras and WeakAuras.GetUnitFrame then
+    WeakAuras.GetUnitFrame = saveGetUnitFrame
+  end
+end
+
 local GetFramesCacheListener
 local function Init(noDelay)
   GetFramesCacheListener = CreateFrame("Frame")
@@ -501,6 +510,7 @@ local function Init(noDelay)
   GetFramesCacheListener:RegisterEvent("UNIT_PET")
   GetFramesCacheListener:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
   GetFramesCacheListener:SetScript("OnEvent", function(self, event, unit, ...)
+    fixGetUnitFrameIntegrity()
     if event == "GROUP_ROSTER_UPDATE" then
       wipe(unitPetState)
       for member in IterateGroupMembers() do
@@ -594,6 +604,7 @@ function lib.GetUnitFrame(target, opt)
     return frames
   end
 end
+saveGetUnitFrame = lib.GetUnitFrame
 lib.GetFrame = lib.GetUnitFrame -- compatibility
 
 -- nameplates
