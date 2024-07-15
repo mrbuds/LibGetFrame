@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 59
+local MINOR_VERSION = 60
 if not LibStub then
   error(MAJOR_VERSION .. " requires LibStub.")
 end
@@ -442,6 +442,13 @@ local function ElvuiWorkaround(frame)
   end
 end
 
+local function CellGetUnitFrames(target, frames, framePriorities)
+  if not C_AddOns.IsAddOnLoaded("Cell") or not Cell.GetUnitFramesForLGF then
+    return frames
+  end
+  return Cell.GetUnitFramesForLGF(target, frames, framePriorities)
+end
+
 local defaultOptions = {
   framePriorities = defaultFramePriorities,
   ignorePlayerFrame = true,
@@ -466,6 +473,7 @@ local defaultOptions = {
     "InvenUnitFrames_TargetTargetTarget",
     "CellQuickCastButton",
   },
+  skipCellOverrides = false,
   returnAll = false,
 }
 local getDefaultOptions = function()
@@ -583,6 +591,11 @@ function lib.GetUnitFrame(target, opt)
   end
 
   local frames = GetUnitFrames(target, ignoredFrames)
+
+  if not (opt.ignoreRaidFrame or opt.skipCellOverrides) then
+    frames = CellGetUnitFrames(target, frames, opt.framePriorities)
+  end
+
   if not frames then
     return
   end
