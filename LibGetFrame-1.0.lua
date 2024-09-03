@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 61
+local MINOR_VERSION = 62
 if not LibStub then
   error(MAJOR_VERSION .. " requires LibStub.")
 end
@@ -313,6 +313,10 @@ local function recurseGetName(frame)
   end
 end
 
+local notAUnitFrameTypeAttribute = {
+  cancelaura = true
+}
+
 local function ScanFrames(depth, frame, ...)
   coroutine.yield()
   if not frame then
@@ -324,12 +328,15 @@ local function ScanFrames(depth, frame, ...)
       ScanFrames(depth + 1, frame:GetChildren())
     end
     if frameType == "Button" then
-      local unit = SecureButton_GetUnit(frame)
-      if unit and frame:IsVisible() then
-        local name = recurseGetName(frame)
-        if name then
-          FrameToFrameName:Add(frame, name)
-          FrameToUnit:Add(frame, unit)
+      local typeAttribute = frame:GetAttribute("type")
+      if not notAUnitFrameTypeAttribute[typeAttribute] then
+        local unit = SecureButton_GetUnit(frame)
+        if unit and frame:IsVisible() then
+          local name = recurseGetName(frame)
+          if name then
+            FrameToFrameName:Add(frame, name)
+            FrameToUnit:Add(frame, unit)
+          end
         end
       end
     end
