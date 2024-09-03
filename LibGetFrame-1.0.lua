@@ -301,15 +301,22 @@ end
 local function recurseGetName(frame)
   local name = frame.GetName and frame:GetName() or nil
   if name then
-     return name
+    return name
   end
   local parent = frame.GetParent and frame:GetParent()
   if parent then
-     for key, child in pairs(parent) do
+    local parentKey = frame.GetParentKey and frame:GetParentKey()
+    if not parentKey then
+      for key, child in pairs(parent) do
         if child == frame then
-           return (recurseGetName(parent) or "") .. "." .. key
+          parentKey = key
+          break
         end
-     end
+      end
+    end
+    if parentKey then
+      return (recurseGetName(parent) or "") .. "." .. parentKey
+    end
   end
 end
 
