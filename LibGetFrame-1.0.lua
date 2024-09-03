@@ -462,7 +462,7 @@ local function GetUnitFrames(target, ignoredFrames)
 end
 
 local function ElvuiWorkaround(frame)
-  if C_AddOns.IsAddOnLoaded("ElvUI") and frame and frame:GetName():find("^ElvUF_") and frame.Health then
+  if C_AddOns.IsAddOnLoaded("ElvUI") and frame and frame:GetName() and frame:GetName():find("^ElvUF_") and frame.Health then
     return frame.Health
   else
     return frame
