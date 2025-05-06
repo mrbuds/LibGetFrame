@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 64
+local MINOR_VERSION = 65
 if not LibStub then
   error(MAJOR_VERSION .. " requires LibStub.")
 end
@@ -99,8 +99,8 @@ end
 lib.getDefaultTargetFrames = getDefaultTargetFrames
 local defaultTargettargetFrames = {
   "^InvenUnitFrames_TargetTarget",
-  "SUFUnittargetarget",
-  "LUFUnittargetarget",
+  "SUFUnittargettarget",
+  "LUFUnittargettarget",
   "PitBull4_Frames_Target's target",
   "ElvUF_TargetTarget",
   "oUF_.-TargetTarget",
