@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 65
+local MINOR_VERSION = 66
 if not LibStub then
   error(MAJOR_VERSION .. " requires LibStub.")
 end
@@ -675,10 +675,10 @@ function lib.GetUnitNameplate(unit)
     if nameplate.unitFrame and nameplate.unitFrame.Health then
       -- elvui
       return nameplate.unitFrame.Health
-    elseif nameplate.unitFramePlater and nameplate.unitFramePlater.healthBar then
+    elseif nameplate.unitFramePlater then
       -- plater
-      -- fallback to default nameplate in case plater is not on screen and uses blizzard default (module disabled, force-blizzard functionality)
-      return nameplate.unitFramePlater.PlaterOnScreen and nameplate.unitFramePlater.healthBar or (nameplate.UnitFrame and nameplate.UnitFrame.healthBar) or nameplate
+      -- use plater anchor frame (with fallback options).
+      return nameplate.PlaterAnchorFrame or nameplate.unitFramePlater.healthBar or (nameplate.UnitFrame and nameplate.UnitFrame.healthBar) or nameplate
     elseif nameplate.kui and nameplate.kui.HealthBar then
       -- kui
       return nameplate.kui.HealthBar
