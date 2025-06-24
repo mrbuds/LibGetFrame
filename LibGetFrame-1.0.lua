@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 66
+local MINOR_VERSION = 67
 if not LibStub then
   error(MAJOR_VERSION .. " requires LibStub.")
 end
@@ -592,8 +592,8 @@ function lib.GetUnitFrame(target, opt)
   end
   local defaultOpt
   if not opt then
-	opt = {}
-	defaultOpt = true
+    opt = {}
+    defaultOpt = true
   end
   setmetatable(opt, { __index = defaultOptions })
 
@@ -602,17 +602,17 @@ function lib.GetUnitFrame(target, opt)
   end
 
   local ignoredFrames = CopyTable(opt.ignoreFrames)
-  if opt.ignorePlayerFrame and (not defaultOpt or target ~= "player") then
+  if opt.ignorePlayerFrame and not (defaultOpt and target == "player") then
     for _, v in pairs(opt.playerFrames) do
       tinsert(ignoredFrames, v)
     end
   end
-  if opt.ignoreTargetFrame and (not defaultOpt or target ~= "target") then
+  if opt.ignoreTargetFrame and not (defaultOpt and target == "target") then
     for _, v in pairs(opt.targetFrames) do
       tinsert(ignoredFrames, v)
     end
   end
-  if opt.ignoreTargettargetFrame and (not defaultOpt or target ~= "targettarget") then
+  if opt.ignoreTargettargetFrame and not (defaultOpt and target == "targettarget") then
     for _, v in pairs(opt.targettargetFrames) do
       tinsert(ignoredFrames, v)
     end
@@ -627,7 +627,7 @@ function lib.GetUnitFrame(target, opt)
       tinsert(ignoredFrames, v)
     end
   end
-  if opt.ignoreFocusFrame and (not defaultOpt or target ~= "focus") then
+  if opt.ignoreFocusFrame and not (defaultOpt and target == "focus") then
     for _, v in pairs(opt.focusFrames) do
       tinsert(ignoredFrames, v)
     end
