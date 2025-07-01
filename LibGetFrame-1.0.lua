@@ -615,7 +615,11 @@ function lib.GetUnitFrame(target, opt)
   if type(GetFramesCacheListener) ~= "table" then
     Init(true)
   end
-  opt = opt or {}
+  local defaultOpt
+  if not opt then
+    opt = {}
+    defaultOpt = true
+  end
   setmetatable(opt, { __index = defaultOptions })
 
   if not target then
@@ -623,17 +627,17 @@ function lib.GetUnitFrame(target, opt)
   end
 
   local ignoredFrames = CopyTable(opt.ignoreFrames)
-  if opt.ignorePlayerFrame then
+  if opt.ignorePlayerFrame and not (defaultOpt and target == "player") then
     for _, v in pairs(opt.playerFrames) do
       tinsert(ignoredFrames, v)
     end
   end
-  if opt.ignoreTargetFrame then
+  if opt.ignoreTargetFrame and not (defaultOpt and target == "target") then
     for _, v in pairs(opt.targetFrames) do
       tinsert(ignoredFrames, v)
     end
   end
-  if opt.ignoreTargettargetFrame then
+  if opt.ignoreTargettargetFrame and not (defaultOpt and target == "targettarget") then
     for _, v in pairs(opt.targettargetFrames) do
       tinsert(ignoredFrames, v)
     end
@@ -648,7 +652,7 @@ function lib.GetUnitFrame(target, opt)
       tinsert(ignoredFrames, v)
     end
   end
-  if opt.ignoreFocusFrame then
+  if opt.ignoreFocusFrame and not (defaultOpt and target == "focus") then
     for _, v in pairs(opt.focusFrames) do
       tinsert(ignoredFrames, v)
     end
