@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 70
+local MINOR_VERSION = 71
 if not LibStub then
   error(MAJOR_VERSION .. " requires LibStub.")
 end
@@ -15,7 +15,7 @@ local GetPlayerInfoByGUID, UnitExists, C_Timer, UnitIsUnit, SecureButton_GetUnit
   GetPlayerInfoByGUID, UnitExists, C_Timer, UnitIsUnit, SecureButton_GetUnit, C_AddOns
 local tinsert, CopyTable, wipe = tinsert, CopyTable, wipe
 
-local maxDepth = 50
+local maxDepth = 10
 
 local defaultFramePriorities = {
   -- raid frames
@@ -364,55 +364,85 @@ local notAUnitFrameTypeAttribute = {
   cancelaura = true
 }
 
-local function ScanFrames(depth, frame, ...)
-  coroutine.yield()
-  if not frame then
-    return
+-- Redo the scanning logic
+local isScanning = false
+local scanFrame = CreateFrame("Frame")
+scanFrame:Hide()
+local scanQueue = {}
+local info = {}
+local ms = 1
+local delay = .5
+
+local testTime
+
+local function StartScan()
+  if isScanning then
+    return -- If the scanning is already in progress,return and do not respond to the new task
   end
-  if depth < maxDepth and frame.IsForbidden and not frame:IsForbidden() then
-    local frameType = frame:GetObjectType()
-    if frameType == "Frame" or frameType == "Button" then
-      ScanFrames(depth + 1, frame:GetChildren())
+
+  testTime = debugprofilestop()
+  isScanning = true
+  -- Clear the queue and add the initial Frame
+  wipe(scanQueue)
+  info.scanEnd = false
+  info.dbIsOK = false
+  info.lastKey = nil
+  info.processed = 0
+  scanFrame:Show()
+end
+
+scanFrame:SetScript("OnUpdate", function()
+  StartProfiling("scan frames")
+  if not info.dbIsOK then
+    local startTime = debugprofilestop()
+    while debugprofilestop() - startTime < ms do
+      local key, value = next(_G, info.lastKey)
+      if not key then
+        info.dbIsOK = true
+        info.sum = #scanQueue
+        break
+      end
+      info.lastKey = key
+      if type(value) == "table" and value.IsObjectType then
+        tinsert(scanQueue, key)
+      end
     end
-    if frameType == "Button" then
-      local typeAttribute = frame:GetAttribute("type")
-      if not notAUnitFrameTypeAttribute[typeAttribute] then
-        local unit = SecureButton_GetUnit(frame)
-        if unit and frame:IsVisible() then
-          local name = recurseGetName(frame)
-          if name then
-            FrameToFrameName:Add(frame, name)
-            FrameToUnit:Add(frame, unit)
+  elseif not info.scanEnd then
+    local startTime = debugprofilestop()
+    while debugprofilestop() - startTime < ms do
+      if info.processed >= info.sum then
+        info.scanEnd = true
+        break
+      end
+      info.processed = info.processed + 1
+      local frame = _G[scanQueue[info.processed]]
+      if type(frame) == "table" and type(frame.IsForbidden) == "function" then
+        local res, info = pcall(frame.IsForbidden, frame)
+        if res and not info and frame.GetObjectType then
+          local frameType = frame:GetObjectType()
+          if frameType == "Button" then
+            local typeAttribute = frame:GetAttribute("type")
+            if not notAUnitFrameTypeAttribute[typeAttribute] then
+              local unit = SecureButton_GetUnit(frame)
+              if unit and frame:IsVisible() then
+                local name = recurseGetName(frame)
+                if name then
+                  FrameToFrameName:Add(frame, name)
+                  FrameToUnit:Add(frame, unit)
+                end
+              end
+            end
           end
         end
       end
     end
-  end
-  ScanFrames(depth, ...)
-end
+  else
+    StopProfiling("scan frames")
 
-local status = "ready"
-local co
-local coroutineFrame = CreateFrame("Frame")
-coroutineFrame:Hide()
+    -- If the queue is empty, the scan is completed
+    scanFrame:Hide()
+    isScanning = false
 
-local function doScanForUnitFrames()
-  if not coroutineFrame:IsShown() then
-    status = "scanning"
-    co = coroutine.create(ScanFrames)
-    coroutineFrame:Show()
-  end
-end
-
-coroutineFrame:SetScript("OnUpdate", function()
-  local start = debugprofilestop()
-  -- Limit to 5ms per frame
-  StartProfiling("scan frames")
-  while debugprofilestop() - start < 5 and coroutine.status(co) ~= "dead" do
-    coroutine.resume(co, 0, UIParent)
-  end
-  StopProfiling("scan frames")
-  if coroutine.status(co) == "dead" then
     StartProfiling("callbacks")
     FrameToFrameName:WriteCache()
     FrameToUnit:CalcRemoved()
@@ -442,30 +472,26 @@ coroutineFrame:SetScript("OnUpdate", function()
       end
       StopProfiling("callback FRAME_UNIT_REMOVED")
     end
-    coroutineFrame:Hide()
+
     FrameToFrameName:Reset()
     FrameToUnit:Reset()
     StopProfiling("callbacks")
-    if status == "scan_queued" then
-      doScanForUnitFrames("queued")
-    else
-      status = "ready"
-    end
   end
 end)
 
 local function ScanForUnitFrames(noDelay)
-  if status == "ready" then
-    if noDelay then
-      doScanForUnitFrames()
-    else
-      status = "scan_delay"
-      C_Timer.After(1, function()
-        doScanForUnitFrames()
-      end)
-    end
-  elseif status == "scanning" then
-    status = "scan_queued"
+  if isScanning then
+    return -- If scanning is in progress,return
+  end
+
+  if noDelay then
+    StartScan()
+  else
+    C_Timer.After(1, function()
+      if not isScanning then -- Check again to prevent the scanning from starting after the delay
+        StartScan()
+      end
+    end)
   end
 end
 
@@ -597,9 +623,6 @@ end
 local GetFramesCacheListener
 local function Init(noDelay)
   GetFramesCacheListener = CreateFrame("Frame")
-  GetFramesCacheListener:RegisterEvent("PLAYER_REGEN_DISABLED")
-  GetFramesCacheListener:RegisterEvent("PLAYER_REGEN_ENABLED")
-  GetFramesCacheListener:RegisterEvent("PLAYER_ENTERING_WORLD")
   GetFramesCacheListener:RegisterEvent("GROUP_ROSTER_UPDATE")
   GetFramesCacheListener:RegisterEvent("UNIT_PET")
   GetFramesCacheListener:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
@@ -623,7 +646,14 @@ local function Init(noDelay)
         unitPetState[unit] = exists
       end
     end
-    ScanForUnitFrames(false)
+    self.t = 0
+    self:SetScript("OnUpdate", function(self, t)
+      self.t = self.t + t
+      if self.t >= delay then
+        self:SetScript("OnUpdate", nil)
+        ScanForUnitFrames(false)
+      end
+    end)
   end)
   ScanForUnitFrames(noDelay)
 end
