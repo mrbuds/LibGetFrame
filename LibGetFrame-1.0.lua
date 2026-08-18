@@ -63,6 +63,7 @@ local defaultFramePriorities = {
   "^DandersFrames_Player$", -- Danders (used for party frames)
   "^ERFPartyHeaderUnitButton%d+$", -- EllesmereUI
   "^ERFPartySelfButton$", -- EllesmereUI (static self frame)
+  "^SpotlightsSlotHeader%d+UnitButton%d+$", -- Spotlights
   "^CompactRaid", -- blizz
   "^CompactParty", -- blizz
   "^PartyFrame",
