@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 77
+local MINOR_VERSION = 78
 if not LibStub then
   error(MAJOR_VERSION .. " requires LibStub.")
 end
@@ -394,28 +394,43 @@ local notAUnitFrameTypeAttribute = {
   cancelaura = true
 }
 
+-- IsForbidden() is not sufficient on its own: objects exist that answer false
+-- and still raise "Attempt to access forbidden object from code tainted by an
+-- AddOn" on the next call. Inspecting a button also touches several APIs that
+-- can raise on a restricted object. Both are wrapped so one bad node is skipped
+-- instead of killing the whole walk.
+--
+-- Neither wrapper may contain the recursion: ScanFrames yields, and a yield
+-- across a pcall boundary is an error in 5.1.
+local function InspectButton(frame)
+  local typeAttribute = frame:GetAttribute("type")
+  if not notAUnitFrameTypeAttribute[typeAttribute] then
+    local unit = SecureButton_GetUnit(frame)
+    if unit and frame:IsVisible() then
+      local name = recurseGetName(frame)
+      if name then
+        FrameToFrameName:Add(frame, name)
+        FrameToUnit:Add(frame, unit)
+      end
+    end
+  end
+end
+
 local function ScanFrames(depth, frame, ...)
   coroutine.yield()
   if not frame then
     return
   end
   if depth < maxDepth and frame.IsForbidden and not frame:IsForbidden() then
-    local frameType = frame:GetObjectType()
+    local ok, frameType = pcall(frame.GetObjectType, frame)
+    if not ok then
+      frameType = nil
+    end
     if frameType == "Frame" or frameType == "Button" then
       ScanFrames(depth + 1, frame:GetChildren())
     end
     if frameType == "Button" then
-      local typeAttribute = frame:GetAttribute("type")
-      if not notAUnitFrameTypeAttribute[typeAttribute] then
-        local unit = SecureButton_GetUnit(frame)
-        if unit and frame:IsVisible() then
-          local name = recurseGetName(frame)
-          if name then
-            FrameToFrameName:Add(frame, name)
-            FrameToUnit:Add(frame, unit)
-          end
-        end
-      end
+      pcall(InspectButton, frame)
     end
   end
   ScanFrames(depth, ...)
@@ -423,6 +438,7 @@ end
 
 local status = "ready"
 local co
+local scanError
 local coroutineFrame = CreateFrame("Frame")
 coroutineFrame:Hide()
 
@@ -439,10 +455,24 @@ coroutineFrame:SetScript("OnUpdate", function()
   -- Limit to 5ms per frame
   StartProfiling("scan frames")
   while debugprofilestop() - start < 5 and coroutine.status(co) ~= "dead" do
-    coroutine.resume(co, 0, UIParent)
+    -- coroutine.resume reports an error by returning false rather than
+    -- propagating it. Left unchecked, a raising node ends the walk here and
+    -- WriteCache below commits whatever partial set was reached, with nothing
+    -- shown to anyone.
+    local ok, err = coroutine.resume(co, 0, UIParent)
+    if not ok then
+      scanError = err
+    end
   end
   StopProfiling("scan frames")
   if coroutine.status(co) == "dead" then
+    if scanError then
+      -- Surfaced once per scan: a silent truncation is indistinguishable from
+      -- a UI that genuinely has no unit frames.
+      local err = scanError
+      scanError = nil
+      geterrorhandler()(MAJOR_VERSION .. " frame scan aborted: " .. tostring(err))
+    end
     StartProfiling("callbacks")
     FrameToFrameName:WriteCache()
     FrameToUnit:CalcRemoved()
