@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 77
+local MINOR_VERSION = 78
 if not LibStub then
   error(MAJOR_VERSION .. " requires LibStub.")
 end
@@ -399,7 +399,7 @@ local function ScanFrames(depth, frame, ...)
   if not frame then
     return
   end
-  if depth < maxDepth and frame.IsForbidden and not frame:IsForbidden() then
+  if depth < maxDepth and frame.IsForbidden and not frame:IsForbidden() and (not frame.CanBeAccessedInContext or frame:CanBeAccessedInContext()) then
     local frameType = frame:GetObjectType()
     if frameType == "Frame" or frameType == "Button" then
       ScanFrames(depth + 1, frame:GetChildren())
