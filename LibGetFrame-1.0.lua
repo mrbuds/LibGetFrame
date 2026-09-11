@@ -18,6 +18,7 @@ local tinsert, CopyTable, wipe = tinsert, CopyTable, wipe
 local maxDepth = 50
 
 local defaultFramePriorities = {
+  "^SpotlightsSlotHeader%d+UnitButton%d+$", -- Spotlights
   -- raid frames
   "^Vd1", -- vuhdo
   "^Vd2", -- vuhdo
@@ -63,7 +64,6 @@ local defaultFramePriorities = {
   "^DandersFrames_Player$", -- Danders (used for party frames)
   "^ERFPartyHeaderUnitButton%d+$", -- EllesmereUI
   "^ERFPartySelfButton$", -- EllesmereUI (static self frame)
-  "^SpotlightsSlotHeader%d+UnitButton%d+$", -- Spotlights
   "^CompactRaid", -- blizz
   "^CompactParty", -- blizz
   "^PartyFrame",
