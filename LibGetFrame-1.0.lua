@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 78
+local MINOR_VERSION = 79
 if not LibStub then
   error(MAJOR_VERSION .. " requires LibStub.")
 end
@@ -50,6 +50,7 @@ local defaultFramePriorities = {
   "^ERFExtraFrame%d+$", -- EllesmereUI (extra/spotlight frames, preferred over the regular raid frames)
   "^ERFGroupHeader%dUnitButton%d+$", -- EllesmereUI (separated groups)
   "^ERFFlatHeaderUnitButton%d+$", -- EllesmereUI (merged groups)
+  "^PleebUI_RaidHeader%d+UnitButton%d+$", -- PleebUI
   -- party frames
   "^AleaUI_GroupHeader", -- Alea
   "^SUFHeaderparty", --suf
@@ -212,6 +213,7 @@ local defaultRaidFrames = {
   "^ERFExtraFrame%d+$", -- EllesmereUI (extra/spotlight frames)
   "^ERFGroupHeader%dUnitButton%d+$", -- EllesmereUI (separated groups)
   "^ERFFlatHeaderUnitButton%d+$", -- EllesmereUI (merged groups)
+  "^PleebUI_RaidHeader%d+UnitButton%d+$", -- PleebUI
   "^CompactRaid",
 }
 local getDefaultRaidFrames = function()
