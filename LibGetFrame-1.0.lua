@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "LibGetFrame-1.0"
-local MINOR_VERSION = 79
+local MINOR_VERSION = 80
 if not LibStub then
   error(MAJOR_VERSION .. " requires LibStub.")
 end
@@ -19,6 +19,7 @@ local maxDepth = 50
 
 local defaultFramePriorities = {
   "^SpotlightsSlotHeader%d+UnitButton%d+$", -- Spotlights
+  "^EQOLUFSpotlightHeaderUnitButton%d+$", -- EnhanceQoL spotlight
   -- raid frames
   "^Vd1", -- vuhdo
   "^Vd2", -- vuhdo
@@ -51,6 +52,10 @@ local defaultFramePriorities = {
   "^ERFGroupHeader%dUnitButton%d+$", -- EllesmereUI (separated groups)
   "^ERFFlatHeaderUnitButton%d+$", -- EllesmereUI (merged groups)
   "^PleebUI_RaidHeader%d+UnitButton%d+$", -- PleebUI
+  "^EQOLUFRaidGroupHeader%d+UnitButton%d+$", -- EnhanceQoL separated raid groups
+  "^EQOLUFRaidHeaderUnitButton%d+$", -- EnhanceQoL combined raid
+  "^EQOLUFMTHeaderUnitButton%d+$", -- EnhanceQoL main tanks
+  "^EQOLUFMAHeaderUnitButton%d+$", -- EnhanceQoL main assists
   -- party frames
   "^AleaUI_GroupHeader", -- Alea
   "^SUFHeaderparty", --suf
@@ -65,6 +70,7 @@ local defaultFramePriorities = {
   "^DandersFrames_Player$", -- Danders (used for party frames)
   "^ERFPartyHeaderUnitButton%d+$", -- EllesmereUI
   "^ERFPartySelfButton$", -- EllesmereUI (static self frame)
+  "^EQOLUFPartyHeaderUnitButton%d+$", -- EnhanceQoL
   "^CompactRaid", -- blizz
   "^CompactParty", -- blizz
   "^PartyFrame",
@@ -72,6 +78,7 @@ local defaultFramePriorities = {
   "^ElvUF_Boss%d$", -- elv
   "^SUFHeaderbossUnitButton%d$", -- suf
   "^LUFHeaderbossUnitButton%d$", -- luf
+  "^EQOLUFBoss%d+Frame$", -- EnhanceQoL
   "^Boss%dTargetFrame$", -- blizz
   "^UUF_Boss%d$", -- unhalted
   "^EllesmereUIUnitFrames_Boss%d$", -- EllesmereUI
@@ -85,7 +92,13 @@ local defaultFramePriorities = {
   "^XPerl_Player$",
   "^UUF_Player$",
   "^EllesmereUIUnitFrames_Player$", -- EllesmereUI
+  "^EQOLUFPlayerFrame$", -- EnhanceQoL
   "^PlayerFrame$",
+  -- secondary unit frames
+  "^EQOLUFTargetFrame$", -- EnhanceQoL
+  "^EQOLUFToTFrame$", -- EnhanceQoL
+  "^EQOLUFFocusFrame$", -- EnhanceQoL
+  "^EQOLUFFocusTargetFrame$", -- EnhanceQoL
 }
 local getDefaultFramePriorities = function()
   return CopyTable(defaultFramePriorities)
@@ -93,6 +106,7 @@ end
 lib.getDefaultFramePriorities = getDefaultFramePriorities
 
 local defaultPlayerFrames = {
+  "^EQOLUFPlayerFrame$", -- EnhanceQoL
   "^InvenUnitFrames_Player$",
   "^SUFUnitplayer$",
   "^LUFUnitplayer$",
@@ -110,6 +124,7 @@ local getDefaultPlayerFrames = function()
 end
 lib.getDefaultPlayerFrames = getDefaultPlayerFrames
 local defaultTargetFrames = {
+  "^EQOLUFTargetFrame$", -- EnhanceQoL
   "^InvenUnitFrames_Target$",
   "^SUFUnittarget$",
   "^LUFUnittarget$",
@@ -127,6 +142,7 @@ local getDefaultTargetFrames = function()
 end
 lib.getDefaultTargetFrames = getDefaultTargetFrames
 local defaultTargettargetFrames = {
+  "^EQOLUFToTFrame$", -- EnhanceQoL
   "^InvenUnitFrames_TargetTarget$",
   "^SUFUnittargettarget$",
   "^LUFUnittargettarget$",
@@ -145,6 +161,7 @@ local getDefaultTargettargetFrames = function()
 end
 lib.getDefaultTargettargetFrames = getDefaultTargettargetFrames
 local defaultPartyFrames = {
+  "^EQOLUFPartyHeaderUnitButton%d+$", -- EnhanceQoL
   "^InvenUnitFrames_Party%d",
   "^AleaUI_GroupHeader",
   "^SUFHeaderparty",
@@ -175,6 +192,7 @@ local getDefaultPartyTargetFrames = function()
 end
 lib.getDefaultPartyTargetFrames = getDefaultPartyTargetFrames
 local defaultFocusFrames = {
+  "^EQOLUFFocusFrame$", -- EnhanceQoL
   "^InvenUnitFrames_Focus$",
   "^ElvUF_FocusTarget$",
   "^SUFUnitfocus$",
@@ -190,6 +208,11 @@ local getDefaultFocusFrames = function()
 end
 lib.getDefaultFocusFrames = getDefaultFocusFrames
 local defaultRaidFrames = {
+  "^EQOLUFSpotlightHeaderUnitButton%d+$", -- EnhanceQoL spotlight
+  "^EQOLUFRaidGroupHeader%d+UnitButton%d+$", -- EnhanceQoL separated raid groups
+  "^EQOLUFRaidHeaderUnitButton%d+$", -- EnhanceQoL combined raid
+  "^EQOLUFMTHeaderUnitButton%d+$", -- EnhanceQoL main tanks
+  "^EQOLUFMAHeaderUnitButton%d+$", -- EnhanceQoL main assists
   "^Vd",
   "^HealBot_HealUnit",
   "^hbPet_HealUnit",
@@ -221,6 +244,7 @@ local getDefaultRaidFrames = function()
 end
 lib.getDefaultRaidFrames = getDefaultRaidFrames
 local defaultBossFrames = {
+  "^EQOLUFBoss%d+Frame$", -- EnhanceQoL
   "^ElvUF_Boss%d$",
   "^SUFHeaderbossUnitButton%d$",
   "^LUFHeaderbossUnitButton%d$",
