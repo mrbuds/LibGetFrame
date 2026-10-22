@@ -756,6 +756,13 @@ function lib.GetUnitNameplate(unit)
   end
   local nameplate = C_NamePlate.GetNamePlateForUnit(unit)
   if nameplate then
+
+    local eui = _G.EllesmereNameplates_NS
+    local euiPlate = eui and eui.plates and eui.plates[unit]
+    if euiPlate and euiPlate.nameplate == nameplate and euiPlate.health then
+      return euiPlate.health
+    end
+
     -- credit to Exality for https://wago.io/explosiveorbs
     if nameplate.unitFrame and nameplate.unitFrame.Health then
       -- elvui
